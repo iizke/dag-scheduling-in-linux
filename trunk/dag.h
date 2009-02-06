@@ -8,15 +8,19 @@
 #ifndef DAG_H_
 #define DAG_H_
 
+#define IN
+#define OUT
+
 struct node {
     /* Double linked list */
     struct node *next;
     struct node *prev;
     /* DATA */
-    int weight;
-    int pid;
-    /* rank is virtual id */
-    int rank;
+    int pid;                /* process id provided by system */
+    int rank;               /* virtual id */
+    char app_name[32];      /* application name */
+    int nparents;           /* # of nodes depending on this node*/
+    int nchildren;          /* # of nodes on which are depended by this node */
 };
 
 struct edge {
@@ -24,10 +28,8 @@ struct edge {
     struct edge *prev;
     struct node *parent;
     struct node *child;
-    /* Weight: default value is 0 */
-    int weight;
-    /* state: valid or pending */
-    char state;
+    int weight;             /* default value is 0 */
+    char state;             /* valid or pending */
 };
 
 struct dag_operations;
@@ -38,20 +40,15 @@ struct dag {
     struct dag_operations *dag_ops;
 };
 
-struct mpi_task {
-    struct mpi_task *next;
-    struct mpi_task *prev;
-    int pid;
-    int rank;
-}; 
+int dag_add_edge(int from_pid, int to_pid, OUT struct edge **e);
+int dag_remove_edge(int from_pid, int to_pid);
+int dag_add_node(int pid, struct node **n);
+int dag_remove_node(int pid);
+int dag_init();
+int dag_clean();
 
-struct mpi_task_list {
-    struct mpi_task *list;
-};
-
-int dag_add_edge(struct dag *d, int from_pid, int to_pid);
-int dag_remove_edge(struct dag *d, int from_pid, int to_pid);
-int mpi_map_rank2pid(char* app_name, int rank);
-int mpi_task_list_add(struct mpi_task_list *list, int pid, int rank);
+/* Supports for MPI */
+int dag_map_mpitask (int rank, OUT struct node **n);
+int dag_get_mpitask (int rank, OUT struct node **n);
 
 #endif /* DAG_H_ */

@@ -16,6 +16,47 @@ struct dag dag;
  */
 static int _dag_add_node (struct dag *d, int pid, OUT struct node **n)
 {
+    struct node * first = NULL;
+    struct node * next = NULL;
+
+    first = d->node_list;
+    next = first;
+    if (!fist){
+        next = malloc (sizeof(struct node));
+        if (!next)
+            return -1;
+        next->nchildren = 0;
+        next->nparents = 0;
+        next->next = next;
+        next->prev = next;
+        next->pid = pid;
+        next->rank = -1;
+        d->node_list = next;
+        return 0;
+    }
+
+    do {
+        if (next->pid == pid)
+            break;
+        else
+            next = next->next;
+    } while (first != next);
+    if (next->pid != pid) {
+        next = malloc (sizeof(struct node));
+        if (!next)
+            return -1;
+        next->nchildren = 0;
+        next->nparents = 0;
+        next->next = first;
+        next->prev = first->prev;
+        first->prev->next = next;
+        first->prev = next;
+        next->pid = pid;
+        next->rank = -1;
+        d->node_list = next;
+    }
+    // estimate priority of task
+
     return 0;
 }
 

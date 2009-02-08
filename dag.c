@@ -8,55 +8,135 @@
 #include <unistd.h>
 #include "dag.h"
 
-struct dag dag;
-
 /**
- * TODO: _dag_add_node
- * Description:
+ * TODO: __edge_list_remove_edge
+ * Description: remove edge in edge_list
  */
-static int _dag_add_node (struct dag *d, int pid, OUT struct node **n)
+int
+__edge_list_remove_edge(struct edge_list *list, struct edge *e)
 {
-    struct node * first = NULL;
-    struct node * next = NULL;
+    struct edge *prev = NULL;
+    struct edge *next = NULL;
 
-    first = d->node_list;
-    next = first;
-    if (!fist){
-        next = malloc (sizeof(struct node));
-        if (!next)
-            return -1;
-        next->nchildren = 0;
-        next->nparents = 0;
-        next->next = next;
-        next->prev = next;
-        next->pid = pid;
-        next->rank = -1;
-        d->node_list = next;
+    if (!e)
+        return 0;
+    prev = e->prev;
+    next = e->next;
+    prev->next = next;
+    next->prev = prev;
+    if (prev == e){
+        list->list = NULL;
+        list->size = 0;
         return 0;
     }
+    e->child->nparents--;
+    e->parent->nchildren--;
+    free(e);
+    list->size--;
+    return 0;
+}
 
-    do {
-        if (next->pid == pid)
-            break;
-        else
-            next = next->next;
-    } while (first != next);
-    if (next->pid != pid) {
-        next = malloc (sizeof(struct node));
-        if (!next)
-            return -1;
-        next->nchildren = 0;
-        next->nparents = 0;
-        next->next = first;
-        next->prev = first->prev;
-        first->prev->next = next;
-        first->prev = next;
-        next->pid = pid;
-        next->rank = -1;
-        d->node_list = next;
+/**
+ * TODO: edge_list_remove_edge
+ * Description: remove edge in edge_list
+ */
+int
+edge_list_remove_edge(struct edge_list *list, struct node_info *parent,
+                struct node_info *child)
+{
+    int i;
+    int size;
+    struct edge *e = NULL;
+    struct edge *next = NULL;
+
+    if (!list) {
+        printf("edge_list pointer is null \n");
+        return -1;
     }
-    // estimate priority of task
+    size = list->size;
+    e = list->list;
+    for (i=0; i<size; i++) {
+        if (!e)
+            return 0;
+        next = e->next;
+        if ((e->parent == parent) && (e->child == child)) {
+            __edge_list_remove_edge(list, e);
+            break;
+        }
+        e = next;
+    }
+    return 0;
+}
+/**
+ * TODO: edge_list_add_edge
+ * Description: Add an edge into edge_list
+ */
+int edge_list_add_edge(struct edge_list *list, struct edge *e)
+{
+    struct edge *last = NULL;
 
+    if (!list || !e) {
+        printf("edge_list or edge pointer is null \n");
+        return -1;
+    }
+    last = list->list->prev;
+    last->next = e;
+    e->next = list->list;
+    list->list->prev = e;
+    e->prev = last;
+    list->size++;
+    return 0;
+}
+/**
+ * TODO: edge_list_remove_node
+ * Description: remove all edge that having node as an end-point
+ */
+int
+edge_list_remove_node(struct edge_list *list, struct node_info *node)
+{
+    struct edge *e = NULL;
+    struct edge *next = NULL;
+    int epid;
+    int npid;
+    int size;
+    int i;
+
+    if ((!list) || (!node)) {
+        printf("node or edge_list pointer is null \n");
+        return -1;
+    }
+    e = list->list;
+    next = e->next;
+    size = list->size;
+    npid = node->pid;
+    for (i=0; i<size; i++) {
+        epid = e->child->pid;
+        if (epid == npid) {
+           __edge_list_remove_edge(list, e);
+           continue;
+        }
+        epid = e->parent->pid;
+        if (epid == npid) {
+           __edge_list_remove_edge(list, e);
+           continue;
+        }
+        e = next;
+        next = e->next;
+    }
+    return 0;
+}
+
+/* TODO: dag_nodelist_compare
+ * Description: comparison function of avl tree
+ */
+int
+dag_nodelist_compare(struct node_info *n1, struct node_info *n2,
+                void *avl_param)
+{
+    if (n1->pid > n2->pid)
+        return 1;
+    if (n1->pid > n2->pid)
+        return -1;
     return 0;
 }
 
@@ -64,17 +144,23 @@ static int _dag_add_node (struct dag *d, int pid, OUT struct node **n)
  * TODO: dag_add_node
  * Description: wrapper of _dag_add_node
  */
-int dag_add_node (int pid, struct node **n)
+int
+dag_add_node(struct dag *d, int pid, struct node_info **n)
 {
-    return _dag_add_node(&dag, pid, n);
-}
-
-/**
- * TODO: _dag_remove_node
- * Description:
- */
-static int _dag_remove_node (struct dag *d, int pid)
-{
+    struct node_info *node_info = malloc (sizeof (struct node_info));
+    if (!node_info) {
+        (*n) = NULL;
+        printf("Cannot malloc node_info structure \n");
+        return -1;
+    }
+    node_info->pid = pid;
+    node_info->nchildren = 0;
+    node_info->nparents = 0;
+    node_info->children_edge_list = NULL;
+    node_info->parent_edge_list = NULL;
+    node_info->rank = -1;
+    avl_insert(d->node_list, node_info);
+    (*n) = node_info;
     return 0;
 }
 
@@ -82,18 +168,19 @@ static int _dag_remove_node (struct dag *d, int pid)
  * TODO: dag_remove_node
  * Description: wrapper of _dag_remove_node
  */
-int dag_remove_node (int pid)
+int
+dag_remove_node(struct dag *d, int pid)
 {
-    return _dag_remove_node(&dag, pid);
-}
+    struct node_info node_info;
+    struct node_info *node = NULL;
 
-/**
- * TODO: _dag_add_edge
- * Description:
- */
-static int _dag_add_edge (struct dag *d, int from_pid, int to_pid,
-                            OUT struct edge **e)
-{
+    node_info.pid = pid;
+    node = avl_find(d->node_list, &node_info);
+    if (node == NULL)
+        return 0;
+    // remove all edges
+    edge_list_remove_node(d->edge_list, node);
+    avl_delete(d->node_list, &node_info);
     return 0;
 }
 
@@ -101,17 +188,31 @@ static int _dag_add_edge (struct dag *d, int from_pid, int to_pid,
  * TODO: dag_add_edge
  * Description: wrapper of _dag_add_edge
  */
-int dag_add_edge (int from_pid, int to_pid, OUT struct edge **e)
+int
+dag_add_edge(struct dag *d, int from_pid, int to_pid, OUT struct edge **e)
 {
-    return _dag_add_edge(&dag, from_pid, to_pid, e);
-}
+    struct edge *edge = NULL;
+    struct node_info from;
+    struct node_info to;
+    struct node_info *parent = NULL;
+    struct node_info *child = NULL;
 
-/**
- * TODO: _dag_remove_edge
- * Description:
- */
-static int _dag_remove_edge (struct dag *d, int from_pid, int to_pid)
-{
+    edge = malloc(sizeof(struct edge));
+    if (!edge) {
+        printf("Cannot malloc an edge structure \n");
+        return -1;
+    }
+    from.pid = from_pid;
+    to.pid = to_pid;
+    parent = avl_find(d->node_list, &from);
+    child = avl_find(d->node_list, &to);
+    edge->child = child;
+    edge->parent = parent;
+    edge->next = edge;
+    edge->prev = edge;
+    edge->weight = 0;
+    edge->state = 0;
+    edge_list_add_edge(d->edge_list, edge);
     return 0;
 }
 
@@ -119,36 +220,44 @@ static int _dag_remove_edge (struct dag *d, int from_pid, int to_pid)
  * TODO: dag_remove_edge
  * Description: wrapper of _dag_remove_edge
  */
-int dag_remove_edge (int from_pid, int to_pid)
+int
+dag_remove_edge(struct dag *d, int from_pid, int to_pid)
 {
-    return _dag_remove_edge(&dag, from_pid, to_pid);
-}
+    struct edge *edge = NULL;
+    struct node_info from;
+    struct node_info to;
+    struct node_info *parent = NULL;
+    struct node_info *child = NULL;
 
-/**
- * TODO: _dag_get_node
- * Description: get node from pid
- * @return: error code
- */
-static int _dag_get_node (struct dag *d, int pid, struct node **n)
-{
+    from.pid = from_pid;
+    to.pid = to_pid;
+    parent = avl_find(d->node_list, &from);
+    child = avl_find(d->node_list, &to);
+    edge_list_remove_edge(d->edge_list, parent, child);
     return 0;
 }
 
 /**
  * TODO: dag_get_node
- * Description: wrapper of _dag_get_node. Get node from pid
+ * Description:
  * @return: error code
  */
-int dag_get_node (int pid, struct node **n)
+int
+dag_get_node(struct dag *d, int pid, struct node_info **n)
 {
-    return _dag_get_node(&dag, pid, n);
+    struct node_info node_info;
+
+    node_info.pid = pid;
+    (*n) = avl_find(d->node_list, &node_info);
+    return 0;
 }
 
 /**
  * TODO: dag_init
  * Description:
  */
-int dag_init ()
+int
+dag_init()
 {
     return 0;
 }
@@ -157,37 +266,8 @@ int dag_init ()
  * TODO: dag_clean
  * Description:
  */
-int dag_clean ()
-{
-    return 0;
-}
-
-/**
- * TODO: dag_map_mpitask
- * Description: mapping rank of task (user-land) to pid (system-land)
- * @return: error code
- *
- * Complexity: O(n)
- */
-int dag_map_mpitask (int rank, OUT struct node ** n)
-{
-    int pid;
-    int flag;
-
-    pid = getpid();
-    flag = dag_add_node(pid, n);
-    if (flag < 0)
-        return flag;
-    (*n)->rank = rank;
-    return 0;
-}
-
-/**
- * TODO: dag_get_mpitask
- * Description: get a node in DAG
- * @return: error code
- */
-int dag_get_mpitask (int rank, OUT struct node ** n)
+int
+dag_clean()
 {
     return 0;
 }

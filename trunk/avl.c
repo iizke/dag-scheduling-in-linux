@@ -765,8 +765,8 @@ avl_destroy(struct avl_table *tree, avl_item_func *destroy)
     for (p = tree->avl_root; p != NULL; p = q)
         if (p->avl_link[0] == NULL) {
             q = p->avl_link[1];
-            if (destroy != NULL && p->avl_data != NULL) destroy(p->avl_data,
-                            tree->avl_param);
+            if (destroy != NULL && p->avl_data != NULL)
+                destroy(p->avl_data, tree->avl_param);
             tree->avl_alloc->libavl_free(tree->avl_alloc, p);
         }
         else {

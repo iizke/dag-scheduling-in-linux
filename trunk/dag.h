@@ -13,8 +13,8 @@
 
 #include "avl.h"
 
-typedef struct avl_node NODE
-typedef struct avl_table NODE_LIST
+typedef struct avl_node NODE;
+typedef struct avl_table NODE_LIST;
 
 struct node_info {
     int pid;                /* process id provided by system */
@@ -49,11 +49,8 @@ int dag_add_edge(struct dag *d, int from_pid, int to_pid, OUT struct edge **e);
 int dag_remove_edge(struct dag *d, int from_pid, int to_pid);
 int dag_add_node(struct dag *d, int pid, struct node_info **info);
 int dag_remove_node(struct dag *d, int pid);
+int dag_get_node(struct dag *d, int pid, struct node_info **n);
 int dag_init();
 int dag_clean();
-
-/* Supports for MPI */
-int dag_map_mpitask (int rank, OUT struct node **n);
-int dag_get_mpitask (int rank, OUT struct node **n);
 
 #endif /* DAG_H_ */

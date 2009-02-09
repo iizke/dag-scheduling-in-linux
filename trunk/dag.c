@@ -6,7 +6,42 @@
  */
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "dag.h"
+
+/**
+ * TODO: edge_list_init
+ * Description: Init edge list
+ */
+int edge_list_init(struct edge_list *list)
+{
+    if (!list)
+        return -1;
+    list->size = 0;
+    list->list = NULL;
+    return 0;
+}
+
+/**
+ * TODO: edge_list_destroy
+ * Description: clean all elements in list
+ */
+int edge_list_destroy(struct edge_list *list)
+{
+    struct edge *next = NULL;
+    int i;
+
+    if (!list)
+        return -1;
+    next = list->list->next;
+    for (i=0; i<list->size; i++) {
+        free(list->list);
+        list->list = next;
+        next = next->next;
+    }
+    return 0;
+}
 
 /**
  * TODO: __edge_list_remove_edge
@@ -84,6 +119,8 @@ int edge_list_add_edge(struct edge_list *list, struct edge *e)
     e->next = list->list;
     list->list->prev = e;
     e->prev = last;
+    e->child->nparents++;
+    e->parent->nchildren++;
     list->size++;
     return 0;
 }
@@ -130,7 +167,7 @@ edge_list_remove_node(struct edge_list *list, struct node_info *node)
  * Description: comparison function of avl tree
  */
 int
-dag_nodelist_compare(struct node_info *n1, struct node_info *n2,
+dag_nodelist_compare(const struct node_info *n1, const struct node_info *n2,
                 void *avl_param)
 {
     if (n1->pid > n2->pid)
@@ -223,7 +260,6 @@ dag_add_edge(struct dag *d, int from_pid, int to_pid, OUT struct edge **e)
 int
 dag_remove_edge(struct dag *d, int from_pid, int to_pid)
 {
-    struct edge *edge = NULL;
     struct node_info from;
     struct node_info to;
     struct node_info *parent = NULL;
@@ -257,8 +293,10 @@ dag_get_node(struct dag *d, int pid, struct node_info **n)
  * Description:
  */
 int
-dag_init()
+dag_init(struct dag *d)
 {
+    d->node_list = avl_create(dag_nodelist_compare, NULL, NULL);
+    edge_list_init(d->edge_list);
     return 0;
 }
 
@@ -267,7 +305,9 @@ dag_init()
  * Description:
  */
 int
-dag_clean()
+dag_clean(struct dag *d)
 {
+    avl_destroy(d->node_list, NULL);
+    edge_list_destroy(d->edge_list);
     return 0;
 }

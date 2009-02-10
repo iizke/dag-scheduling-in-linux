@@ -17,6 +17,7 @@ struct id_list {
 
 struct task {
     struct task *next;
+    struct task *prev;
     struct id_list *parent_list;
     struct id_list *children_list;
     int id;
@@ -51,21 +52,24 @@ int task_init(struct task *t)
         return -1;
     t->children_list = NULL;
     t->id = -1;
-    t->next = NULL;
+    t->next = t;
+    t->prev = t;
     t->parent_list = NULL;
     return 0;
 }
 
-int idlist_insert(struct id_list *list, int id)
+int idlist_insert(struct id_list **list, int id)
 {
     struct id_list *node;
 
+    if (!list)
+        return -1;
     node = malloc(sizeof(struct id_list));
     if (!node)
         return -1;
     node->id = id;
-    node->next = list;
-    list = node;
+    node->next = (*list);
+    (*list) = node;
     return 0;
 }
 
@@ -73,8 +77,15 @@ int task_list_insert(struct task_list *list, struct task *task)
 {
     if (!task || !list)
         return -1;
-    task->next = list->list;
-    list->list = task;
+    if (!list->list)
+        list->list = task;
+    else {
+        struct task *last = list->list->prev;
+        last->next = task;
+        task->next = list->list;
+        list->list->prev = task;
+        task->prev = last;
+    }
     list->size++;
     return 0;
 }
@@ -83,14 +94,14 @@ int task_insert_parent(struct task *t, int id)
 {
     if (!t || id < 0)
         return -1;
-    return idlist_insert(t->parent_list, id);
+    return idlist_insert(&(t->parent_list), id);
 }
 
 int task_insert_child(struct task *t, int id)
 {
     if (!t || id < 0)
         return -1;
-    return idlist_insert(t->children_list, id);
+    return idlist_insert(&(t->children_list), id);
 }
 
 static int read_input_file(char *filename, struct task_list *task_list)
@@ -101,7 +112,7 @@ static int read_input_file(char *filename, struct task_list *task_list)
     struct task *task = NULL;
     int err = 0;
     int id;
-    char line[256];
+    char line[32];
 
     f = fopen(filename, "r");
     if (f == NULL)
@@ -110,12 +121,13 @@ static int read_input_file(char *filename, struct task_list *task_list)
      * Read script file to build action table
      */
     while (1) {
-        err = fgets(line, 256, f);
-        if (err == NULL) {
+        err = fscanf(f, "%s", line);
+        if (err == EOF) {
             printf("Read script file completely, go to do now \n");
             break;
         }
         if (!strcmp(line, "node")) {
+            printf("node \n");
             cur_task_id++;
             task = malloc(sizeof(struct task));
             if (!task)
@@ -125,23 +137,31 @@ static int read_input_file(char *filename, struct task_list *task_list)
             continue;
         }
         if (!strcmp(line, "p")) {
+            printf("p \n");
             cur_list = 'p'; // parent list
             continue;
         }
         if (!strcmp(line, "c")) {
+            printf("c \n");
             cur_list = 'c'; // child list
             continue;
         }
         if (!strcmp(line,"end")) {
+            printf("end \n");
             task_list_insert(task_list, task);
             continue;
         }
         id = atoi(line);
+        printf("id %d \n", id);
         if (cur_list == 'p'){
+            printf("add parent %d \n", id);
             task_insert_parent(task, id);
+            printf("check parent %d \n", task->parent_list->id);
             continue;
         } else if (cur_list == 'c') {
+            printf("add child %d \n", id);
             task_insert_child(task, id);
+            printf("check child %d \n", task->children_list->id);
             continue;
         } else
             continue;
@@ -149,33 +169,37 @@ static int read_input_file(char *filename, struct task_list *task_list)
     return 0;
 }
 
-static int export2mbenchScript(struct task_list *list, char *output_name)
+int export2mbenchScript(struct task_list *list, char *output_name)
 {
     FILE *f;
     int i;
     struct task *task = NULL;
     struct id_list *idlist = NULL;
 
+    printf("output file: %s \n", output_name);
     if (!list)
         return -1;
-    f = fopen(output_name, "rw");
+    f = fopen(output_name, "w+");
     if (f == NULL)
         return -1;
     task = list->list;
     for (i=0; i<list->size; i++) {
-        fprintf(f, "begin");
+        fprintf(f, "begin \n");
         idlist = task->children_list;
         while (idlist) {
             fprintf(f, "srecv 1 %d \n", idlist->id);
             idlist = idlist->next;
+
         }
-        fprintf(f, "wait \n");
+        if (task->children_list)
+            fprintf(f, "wait \n");
         fprintf(f, "doload 1 1\n");
         idlist = task->parent_list;
         while (idlist) {
             fprintf(f, "send 1 %d \n", idlist->id);
             idlist = idlist->next;
         }
+        fprintf(f, "end \n");
         task = task->next;
     }
     fclose(f);
@@ -186,6 +210,7 @@ int main(int argc, char **argv)
 {
     struct cmdoptions opts;
     struct task_list tasklist;
+    task_list_init(&tasklist);
     parser_arg(argc, argv, &opts);
     read_input_file(opts.script_file, &tasklist);
     export2mbenchScript(&tasklist, opts.output_file);

@@ -13,7 +13,7 @@ parser.o : parser.c
 convert.o : convert.c
 
 clean : 
-	rm -f *~ *.o mbench-mpi mbench-ipc mix test
+	rm -f *~ *.o mbench-mpi mbench-ipc mix test dag2mbenchScript
 
 cleanlog : 
 	rm mbench.log timelog templog

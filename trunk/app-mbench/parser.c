@@ -30,6 +30,7 @@ int parser_arg(int argc, char **argv, struct cmdoptions *opts)
     /* Default value */
     opts->nprocs = 2;
     strcpy(opts->script_file, "script.txt");
+    strcpy(opts->output_file, "output.txt");
     opts->nice = 0;
     opts->batch = 0;
     /* parse command line */

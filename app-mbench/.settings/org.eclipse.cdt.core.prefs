@@ -1,4 +1,4 @@
-#Tue Feb 10 10:28:28 ICT 2009
+#Tue Feb 10 20:28:07 ICT 2009
 eclipse.preferences.version=1
 environment/project/0.2004817172=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<environment append\="true" appendContributed\="false">\n<variable delimiter\=";" name\="PATH" operation\="replace" value\="/usr/lib/lam/bin\:/usr/kerberos/sbin\:/usr/kerberos/bin\:/usr/local/sbin\:/usr/local/bin\:/sbin\:/bin\:/usr/sbin\:/usr/bin\:/usr/X11R6/bin\:/root/bin"/>\n</environment>\n
 org.eclipse.cdt.core.formatter.alignment_for_arguments_in_method_invocation=16

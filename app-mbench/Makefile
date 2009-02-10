@@ -4,7 +4,7 @@ LDFLAGS=-lrt -lm
 all : mbench-mpi mbench-ipc dag2mbenchScript
 mbench-ipc : mbench-ipc.o genload.o parser.o errors.o
 mbench-mpi : mbench-mpi.o genload.o parser.o errors.o convert.o
-dag2mbenchScript: dag2mbenchScript.o parser.o 
+dag2mbenchScript : dag2mbenchScript.o parser.o 
 mbench-mpi.o : mbench-mpi.c 
 mbench-ipc.o : mbench-ipc.c
 errors.o : errors.c

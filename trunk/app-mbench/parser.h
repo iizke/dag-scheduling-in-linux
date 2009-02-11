@@ -7,6 +7,7 @@ struct cmdoptions {
     int batch; // 1 is batch, 0 is non-batch
     char script_file[32]; // script file contains actions of all processes
     char output_file[32];
+    int density;
 };
 
 int parser_arg(int argc, char **argv, struct cmdoptions *opts);

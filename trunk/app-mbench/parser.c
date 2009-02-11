@@ -34,7 +34,7 @@ int parser_arg(int argc, char **argv, struct cmdoptions *opts)
     opts->nice = 0;
     opts->batch = 0;
     /* parse command line */
-    while ((opt = getopt(argc, argv, "n:f:p:o:b")) != EOF) {
+    while ((opt = getopt(argc, argv, "n:f:p:o:d:b")) != EOF) {
         switch (opt) {
         case 'n':
             opts->nprocs = atoi(optarg);
@@ -50,6 +50,9 @@ int parser_arg(int argc, char **argv, struct cmdoptions *opts)
             break;
         case 'b':
             opts->batch = 1;
+            break;
+        case 'd'://density
+            opts->density = atoi(optarg);
             break;
         default:
             errflag = 0;

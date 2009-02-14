@@ -1,6 +1,6 @@
-#Tue Feb 10 20:28:07 ICT 2009
+#Sat Feb 14 14:52:00 ICT 2009
 eclipse.preferences.version=1
-environment/project/0.2004817172=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<environment append\="true" appendContributed\="false">\n<variable delimiter\=";" name\="PATH" operation\="replace" value\="/usr/lib/lam/bin\:/usr/kerberos/sbin\:/usr/kerberos/bin\:/usr/local/sbin\:/usr/local/bin\:/sbin\:/bin\:/usr/sbin\:/usr/bin\:/usr/X11R6/bin\:/root/bin"/>\n</environment>\n
+environment/project/0.2004817172=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<environment append\="true" appendContributed\="true">\n<variable delimiter\=";" name\="PATH" operation\="replace" value\="/usr/lib/lam/bin\:/usr/kerberos/bin\:/usr/local/bin\:/bin\:/usr/bin\:/home/roseman/bin"/>\n<variable delimiter\=";" name\="LD_LIBRARY_PATH" operation\="replace" value\="/usr/lib/lam/lib\:/usr/lib/java-1.6.0/jre/lib/i386/client\:/usr/lib/java-1.6.0/jre/lib/i386\:/usr/lib/xulrunner-1.9\:/usr/lib/xulrunner-1.9"/>\n</environment>\n
 org.eclipse.cdt.core.formatter.alignment_for_arguments_in_method_invocation=16
 org.eclipse.cdt.core.formatter.alignment_for_base_clause_in_type_declaration=80
 org.eclipse.cdt.core.formatter.alignment_for_compact_if=0

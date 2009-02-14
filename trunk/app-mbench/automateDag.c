@@ -6,6 +6,8 @@
  *      Author: root
  */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include "parser.h"
 #include "randf.h"
 
@@ -15,18 +17,6 @@ struct dag {
     int density;
 };
 
-
-int cal_edge_num(int ntasks, int density)
-{
-    int nedges = ntasks * (ntasks - 1) / 2;
-    int val = nedges * density / 100;
-    if (val < nedges)
-        val++;
-    else
-        val = nedges;
-    return val;
-}
-
 int mapping(int p, int c, int ntasks)
 {
     int val = (2 * ntasks - 3 - p) * p + 2 * c;
@@ -34,50 +24,100 @@ int mapping(int p, int c, int ntasks)
     return val;
 }
 
-int unmapping(int ntasks, int *p, int *c)
-{
-    return 0;
-}
-
 int dag_generate(struct dag *d)
 {
-    int i;
+    int i, j;
     int size;
     int seed;
 
-    if (ntasks <= 0)
+    if (d->ntasks <= 0)
         return -1;
+    size = d->ntasks * d->ntasks;
     if (!d->edge_state_list) {
-        d->edge_state_list = malloc(d->ntasks * sizeof(int));
+        d->edge_state_list = malloc(d->ntasks * d->ntasks * sizeof(int));
         if (!d->edge_state_list)
             return -1;
+        for (i = 0; i < size; i++)
+            d->edge_state_list[i] = 0;
     }
-    size = d->ntasks * (d->ntasks - 1) / 2;
-    for (i=0; i<size; i++){
-        seed = rand();
-        d->edge_state_list[i] = srand(seed, density);
+    seed = rand();
+    for (i=0; i < (d->ntasks - 1); i++){
+        for (j=i+1; j < d->ntasks; j++) {
+            char state;
+            srand(seed);
+            seed = rand();
+            state = my_srand(seed, d->density);
+            d->edge_state_list[i*d->ntasks + j] = state;
+            d->edge_state_list[j*d->ntasks + i] = -state;
+        }
     }
+    size = d->ntasks * d->ntasks;
+        for (i=0; i<size; i++)
+            printf("i %d, val = %d \n",i,d->edge_state_list[i]);
+
     return 0;
 }
 
 int dag_export(struct dag *d, char *filename)
 {
     FILE *f;
+    int i;
+    int j;
+    char parent[256];
+    char children[256];
+    int size;
+
+    f = fopen(filename, "w+");
+    if (!f)
+        return -1;
+    if (d->ntasks <= 0)
+        return -1;
+
+    for (i=0; i < d->ntasks; i++){
+        char *p_tmp = parent;
+        char *c_tmp = children;
+        int numchar;
+        p_tmp[0] = '\0';
+        c_tmp[0] = '\0';
+        for (j=0; j < d->ntasks; j++) {
+            int state = d->edge_state_list[i*d->ntasks + j];
+            printf("i = %d, j = %d, index = %d, state = %d \n", i, j,i*d->ntasks + j,state);
+            if (state > 0) {
+                numchar = sprintf(c_tmp, "%d ", j);
+                c_tmp += numchar;
+                c_tmp[0] = '\0';
+            } else if (state < 0) {
+                numchar = sprintf(p_tmp, "%d ", j);
+                p_tmp += numchar;
+                p_tmp[0] = '\0';
+            }
+        }
+        fprintf(f, "node \n");
+        fprintf(f, "p %s \n", parent);
+        fprintf(f, "c %s \n", children);
+    }
+    fclose(f);
     return 0;
 }
 
 int dag_init(struct dag *d, int ntasks)
 {
+    int i;
+    int size;
     if (ntasks < 0)
         ntasks = 0;
     if (!d)
         return -1;
     d->ntasks = ntasks;
-    d->edge_state_list = malloc(d->ntasks * sizeof(int));
     d->density = 100;
+    d->edge_state_list = malloc(d->ntasks * d->ntasks * sizeof(int));
+    if (!d->edge_state_list)
+        return -1;
+    size = d->ntasks * d->ntasks;
+    for (i = 0; i < size; i++)
+        d->edge_state_list[i] = 0;
     return 0;
 }
-
 
 int main (int argc, char **argv)
 {
@@ -86,6 +126,7 @@ int main (int argc, char **argv)
 
     parser_arg(argc, argv, &opts);
     dag_init(&dag, opts.nprocs);
+    dag.density = opts.density;
     dag_generate(&dag);
     dag_export(&dag, opts.output_file);
 

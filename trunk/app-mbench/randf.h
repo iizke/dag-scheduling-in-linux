@@ -8,6 +8,6 @@
 #ifndef RANDF_H_
 #define RANDF_H_
 
-double srand(int seed, int density);
+double my_srand(int seed, int density);
 
 #endif /* RANDF_H_ */

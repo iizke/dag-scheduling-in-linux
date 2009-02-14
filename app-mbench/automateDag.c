@@ -44,9 +44,7 @@ int dag_generate(struct dag *d)
     for (i=0; i < (d->ntasks - 1); i++){
         for (j=i+1; j < d->ntasks; j++) {
             char state;
-            srand(seed);
-            seed = rand();
-            state = my_srand(seed, d->density);
+            state = my_srand(d->density);
             d->edge_state_list[i*d->ntasks + j] = state;
             d->edge_state_list[j*d->ntasks + i] = -state;
         }

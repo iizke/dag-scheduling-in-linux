@@ -1,4 +1,4 @@
-#!/bin/sh
+# !/bin/sh
 # kernbench by Con Kolivas <kernbench@kolivas.org>
 # based on a benchmark by Martin J. Bligh
 #
@@ -10,11 +10,8 @@ trap 'echo "ABORTING";exit' 1 2 15
 # in version 0.1: statistic values are determined in mpirun, only elapsed-time is valuable (single value)
 # in version 0.2: statistic values are determined in each processes created by mpirun, that's more accuracy (multi-value)
 # in version 0.3: add more statistic values: true elapsed time and expected elapsed time + using tool schedtool
-
 VERSION=0.2
-
 USERNAME=roseman
-
 num_runs=2			# number of processes mbech-mpi
 script_file=script.txt		# file containing action script of all processes
 nloops=1			# number of loop calling mbench-mpi
@@ -25,14 +22,13 @@ batch=""			# batch="": do not run with batch policy
 subdir=""
 minnice=-20 			# min value of nice
 maxnice=19			# max value of nice
-
 #
 # Parsing input
 #
 while getopts vn:l:f:r:p:m:M:d:hb i
 do
-	case $i in
-		 h) echo "mbench is based on kernbench v$VERSION of Con Kolivas. It is modified by roseman"
+    case $i in
+        h) echo "mbench is based on kernbench v$VERSION of Con Kolivas. It is modified by roseman"
 				echo "Usage:"
 				echo "mbench-v0.2.sh [-b] [-n runs] [-f script_file] [-l nloops] [-m min] [-M max] [-h] [-v]"
 				echo "n : number of created process "
@@ -45,41 +41,39 @@ do
 				echo "b : run program with batch policy"
 				echo "d : sub-directory "
 				exit ;;
-		 v) echo "mbench is based on kernbench v$VERSION of Con Kolivas. It is modified by roseman" ; exit ;;
-		 n) nruns=$OPTARG ;;
-		 b) batch="-B";;
-		 f) script_file=$OPTARG ;;
-		 l) nloops=$OPTARG ;;
-		 m) minnice=$OPTARG ;;
-		 M) maxnice=$OPTARG ;;
-		 d) subdir=$OPTARG ;;
-	esac
+        v) echo "mbench is based on kernbench v$VERSION of Con Kolivas. It is modified by roseman" ; exit ;;
+        n) nruns=$OPTARG ;;
+        b) batch="-B";;
+        f) script_file=$OPTARG ;;
+        l) nloops=$OPTARG ;;
+        m) minnice=$OPTARG ;;
+        M) maxnice=$OPTARG ;;
+        d) subdir=$OPTARG ;;
+    esac
 done
 
-lamboot 
+lamboot
 make
 rm -f timelog
-
 #
 # Check needed tools
 #
 for i in time awk yes date schedtool
 do
-	iname=`which $i`
-	if [[ ! -a $iname ]] ; then
-		echo "$i not found in path, please install it; exiting"
-		exit
-	fi
+    iname=`which $i`
+    if [[ ! -a $iname ]] ; then
+        echo "$i not found in path, please install it; exiting"
+        exit
+    fi
 done
-
 # get script file name in briefly
 sf=$script_file
 lsf=""
 
 while [ "$sf" != "$lsf" ]
 do 
-	lsf=$sf
-	sf=`echo $lsf | cut -f2- -d '/'`
+    lsf=$sf
+    sf=`echo $lsf | cut -f2- -d '/'`
 done
 
 time=`which time`
@@ -211,43 +205,33 @@ show_statistics()
 do_log()
 {
 	echo "Average Run (std deviation):" > templog
-
 	show_statistics $temp_true_elapsed
 	true_elavg=$avg
 	echo Elapsed Time "$avg ($sdev)" >> templog
-
 	show_statistics $temp_expected_elapsed
 	expected_elavg=$avg
 	echo Expected Elapsed-Time "$avg ($sdev)" >> templog
-
 	show_statistics $temp_sum_elapsed
 	sum_elavg=$avg
 	echo Sum Elapsed Times "$avg ($sdev)" >> templog
-
 	show_statistics $temp_user
 	utavg=$avg
 	echo User Time "$avg ($sdev)" >> templog
-	
 	show_statistics $temp_sys
 	stavg=$avg
 	echo System Time "$avg ($sdev)" >> templog
-	
 	show_statistics $temp_percent
 	pcavg=$avg
 	echo Percent CPU "$avg ($sdev)" >> templog
-
 	show_statistics $temp_ctx
 	csavg=$avg
 	echo Context Switches "$avg ($sdev)" >> templog
-
 	show_statistics $temp_sleeps
 	slavg=$avg
 	echo Sleeps "$avg ($sdev)" >> templog
-
 	echo >> templog
 	cat templog
 	cat templog >> $logfile
-
 	if (($i == $nloops)); then
 		echo "$j	$true_elavg	$j	$expected_elavg	$j	$sum_elavg	$j	$utavg	$j	$stavg	$j	$pcavg	$j	$csavg	$j	$slavg " >> $summary_logfile
 	fi
@@ -273,13 +257,10 @@ read_timelog()
 		sum_ctxswt=`echo $sum_ctxswt $ctxswt | awk '{print $1 + $2}'`
 		sum_sleeptime=`echo $sum_sleeptime $sleeptime | awk '{print $1 + $2}'`
 	done <timelog
-	
 	expected_eltime=`echo $sum_utime $sum_stime $cpus | awk '{print ($1+$2) / $3}'`
-
 	echo Loop $i-th >> $subdir/details/nice$j'_'`uname -r`
 	cat timelog >> $subdir/details/nice$j'_'`uname -r`
 	echo >> $subdir/details/nice$j'_'`uname -r`
-
 	rm -f timelog
 	echo $true_eltime $expected_eltime $sum_eltime $sum_utime $sum_stime $sum_pcent $sum_ctxswt $sum_sleeptime > sum_timelog
 }
@@ -294,7 +275,6 @@ do_runs()
 		echo All data of _nice_ $j logged to $logfile
 		date >> $logfile
 		uname -r >> $logfile
-
 		temp_sum_elapsed="a"
 		temp_true_elapsed="a"
 		temp_expected_elapsed="a"
@@ -303,7 +283,6 @@ do_runs()
 		temp_percent=""
 		temp_ctx=""
 		temp_sleeps=""
-	
 		for (( i=1 ; i <= nloops ; i++ ))
 		do
 			echo $i-th loop of _nice_ $j...

@@ -63,7 +63,6 @@ int dag_export(struct dag *d, char *filename)
     int j;
     char parent[256];
     char children[256];
-    int size;
 
     f = fopen(filename, "w+");
     if (!f)
@@ -93,6 +92,7 @@ int dag_export(struct dag *d, char *filename)
         fprintf(f, "node \n");
         fprintf(f, "p %s \n", parent);
         fprintf(f, "c %s \n", children);
+        fprintf(f, "end \n");
     }
     fclose(f);
     return 0;

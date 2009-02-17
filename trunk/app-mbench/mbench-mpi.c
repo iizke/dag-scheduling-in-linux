@@ -84,9 +84,11 @@ int build_action_table(const struct cmdoptions *opts,
             cmdcode = ACT_GENLOAD;
         } else if (!strcmp(action, "ssend")) {
             cmdcode = ACT_SSEND;
+        } else if (!strcmp(action, "wait")) {
+            continue;
         } else {
             printf("Can not understand this script \n");
-            return -1;
+            return -1;            
         }
 
         if (cmdcode >= ACT_MIN) {
@@ -321,6 +323,5 @@ int main(int argc, char ** argv)
     build_process(&acttbl.script[rank], rank);
 
     MPI_Finalize();
-
     return 0;
 }

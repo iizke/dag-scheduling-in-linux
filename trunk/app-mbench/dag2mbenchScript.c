@@ -127,7 +127,6 @@ static int read_input_file(char *filename, struct task_list *task_list)
             break;
         }
         if (!strcmp(line, "node")) {
-            printf("node \n");
             cur_task_id++;
             task = malloc(sizeof(struct task));
             if (!task)
@@ -137,17 +136,14 @@ static int read_input_file(char *filename, struct task_list *task_list)
             continue;
         }
         if (!strcmp(line, "p")) {
-            printf("p \n");
             cur_list = 'p'; // parent list
             continue;
         }
         if (!strcmp(line, "c")) {
-            printf("c \n");
             cur_list = 'c'; // child list
             continue;
         }
         if (!strcmp(line,"end")) {
-            printf("end \n");
             task_list_insert(task_list, task);
             continue;
         }
@@ -184,22 +180,23 @@ int export2mbenchScript(struct task_list *list, char *output_name)
         return -1;
     task = list->list;
     for (i=0; i<list->size; i++) {
-        fprintf(f, "begin \n");
+        fprintf(f, "begin 1 \n");
         idlist = task->children_list;
         while (idlist) {
-            fprintf(f, "srecv 1 %d \n", idlist->id);
+            fprintf(f, "recv 1 %d \n", idlist->id);
             idlist = idlist->next;
 
         }
-        if (task->children_list)
-            fprintf(f, "wait \n");
-        fprintf(f, "doload 1 1\n");
+        // TODO: Ignore temporarily
+        //if (task->children_list)
+        //    fprintf(f, "wait \n");
+        fprintf(f, "genload 1 1\n");
         idlist = task->parent_list;
         while (idlist) {
             fprintf(f, "send 1 %d \n", idlist->id);
             idlist = idlist->next;
         }
-        fprintf(f, "end \n");
+        //fprintf(f, "end \n");
         task = task->next;
     }
     fclose(f);

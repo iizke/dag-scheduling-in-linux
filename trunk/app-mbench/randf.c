@@ -17,6 +17,7 @@ double my_srand(int density)
     double val;
     struct timeval timeval;
     int seed;
+
     gettimeofday(&timeval, NULL);
     seed = timeval.tv_sec - 60 + timeval.tv_usec;
     srand48(seed);

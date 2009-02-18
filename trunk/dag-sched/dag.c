@@ -167,9 +167,10 @@ edge_list_remove_node(struct edge_list *list, struct node_info *node)
  * Description: comparison function of avl tree
  */
 int
-dag_nodelist_compare(const struct node_info *n1, const struct node_info *n2,
-                void *avl_param)
+dag_nodelist_compare(const void *_n1, const void *_n2, void *avl_param)
 {
+    struct node_info *n1 = (struct node_info*)_n1;
+    struct node_info *n2 = (struct node_info*)_n2;
     if (n1->pid > n2->pid)
         return 1;
     if (n1->pid > n2->pid)

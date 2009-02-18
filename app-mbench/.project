@@ -3,6 +3,7 @@
 	<name>app-mbench</name>
 	<comment></comment>
 	<projects>
+		<project>dag-sched</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

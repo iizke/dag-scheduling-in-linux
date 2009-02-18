@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include "dagsched.h"
 #include "dag.h"
+
+#define MAX_NPARENTS    5
 /**
  * TODO: do_dag_sched
  * Description: set priority and sched policy to task
@@ -18,9 +20,14 @@
 int do_dag_sched(struct node_info *node)
 {
     struct sched_param param;
+    int p;
     if (!node)
         return -1;
-    param.__sched_priority = 10 - node->nchildren + node->nparents;
+    param.__sched_priority = 10 + MAX_NPARENTS*node->nchildren;
+    p = node->nparents;
+    if (node->nparents >= MAX_NPARENTS)
+        p = MAX_NPARENTS - 1;
+    param.__sched_priority -= p;
     sched_setparam(node->pid, &param);
     return 0;
 }

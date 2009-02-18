@@ -1,4 +1,5 @@
-#Fri Feb 06 11:41:54 ICT 2009
+#Tue Feb 10 20:16:46 ICT 2009
 eclipse.preferences.version=1
-task-tags/enabled=true
+task-tags/taskPriorities=2,1,2,1
+task-tags/taskTags=FIXME,XXX,MESH-TODO,TODO
 task-tags/use-project-settings=true

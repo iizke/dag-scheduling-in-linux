@@ -142,6 +142,8 @@ edge_list_remove_node(struct edge_list *list, struct node_info *node)
         printf("node or edge_list pointer is null \n");
         return -1;
     }
+    if (list->size == 0)
+        return 0;
     e = list->list;
     next = e->next;
     size = list->size;

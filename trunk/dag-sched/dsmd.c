@@ -23,12 +23,14 @@ int do_dag_sched(struct node_info *node)
     int p;
     if (!node)
         return -1;
-    param.__sched_priority = 100 + MAX_NPARENTS*node->nchildren;
+    param.__sched_priority = 50 + MAX_NPARENTS*node->nchildren;
     p = node->nparents;
     if (node->nparents >= MAX_NPARENTS)
         p = MAX_NPARENTS - 1;
     param.__sched_priority -= p;
+    printf("prio cua %d la %d \n", node->pid, param.__sched_priority);
     sched_setparam(node->pid, &param);
+    perror("sched_setparam");
     return 0;
 }
 
@@ -53,7 +55,7 @@ int process_msg(int dagq_id, struct dag *dag)
                     break;
                 case CMD_REMOVE_TASK:
                     dag_remove_node(dag, msginfo.pid1);
-                    printf("Da add task %d \n", msginfo.pid1);
+                    printf("Da remove task %d \n", msginfo.pid1);
                     break;
                 case CMD_ADD_CONNECTION:
                     dag_add_edge(dag, msginfo.pid1, msginfo.pid2, &edge);

@@ -5,4 +5,4 @@ all: testmpi
 testmpi: testmpi.c dagsched.o
 dagsched.o: dagsched.c dagsched.h
 clean: 
-	rm *.o *~ testmpi
+	-rm -f *.o *~ testmpi

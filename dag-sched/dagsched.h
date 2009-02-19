@@ -8,9 +8,9 @@
 #ifndef DAGSCHEDD_H_
 #define DAGSCHEDD_H_
 
-#define DAG_MSQ_NAME            "IIZKE"
+#define DAG_MSQ_NAME            "/HHNAM"
 #define MSG_PRIO                1
-#define MAX_DAGQ_SIZE           100
+#define MAX_DAGQ_SIZE           7
 #define CMD_ADD_TASK            0
 #define CMD_REMOVE_TASK         1
 #define CMD_ADD_CONNECTION      2
@@ -25,11 +25,11 @@ struct msg_info {
 };
 
 /* DSM: DAG Scheduling Module */
-int dsm_add_task(int dagq_id, int pid);
-int dsm_remove_task(int dagq_id, int pid);
-int dsm_add_mpitask(int dagq_id, int rank);
-int dsm_add_connection(int dagq_id, int from_rank, int to_rank);
-int dsm_remove_connection(int dagq_id, int from_rank, int to_rank);
-int dsm_init(int *dagq_id);
-int dsm_halt(int dagq_id);
+int dsm_add_task(mqd_t dagq_id, int pid);
+int dsm_remove_task(mqd_t dagq_id, int pid);
+int dsm_add_mpitask(mqd_t dagq_id, int rank);
+int dsm_add_connection(mqd_t dagq_id, int from_rank, int to_rank);
+int dsm_remove_connection(mqd_t dagq_id, int from_rank, int to_rank);
+int dsm_init(mqd_t *dagq_id);
+int dsm_halt(mqd_t dagq_id);
 #endif /* DAGSCHEDD_H_ */

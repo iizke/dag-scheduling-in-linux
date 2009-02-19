@@ -23,7 +23,7 @@ int do_dag_sched(struct node_info *node)
     int p;
     if (!node)
         return -1;
-    param.__sched_priority = 10 + MAX_NPARENTS*node->nchildren;
+    param.__sched_priority = 100 + MAX_NPARENTS*node->nchildren;
     p = node->nparents;
     if (node->nparents >= MAX_NPARENTS)
         p = MAX_NPARENTS - 1;
@@ -48,10 +48,12 @@ int process_msg(int dagq_id, struct dag *dag)
             switch (msginfo.cmd){
                 case CMD_ADD_TASK:
                     dag_add_node(dag, msginfo.pid1, &node);
+                    printf("Da add task %d \n", msginfo.pid1);
                     do_dag_sched(node);
                     break;
                 case CMD_REMOVE_TASK:
                     dag_remove_node(dag, msginfo.pid1);
+                    printf("Da add task %d \n", msginfo.pid1);
                     break;
                 case CMD_ADD_CONNECTION:
                     dag_add_edge(dag, msginfo.pid1, msginfo.pid2, &edge);
@@ -78,11 +80,16 @@ int main (int argc, char **argv)
     int dagq_id;
     struct dag dag;
     dsm_init(&dagq_id);
+    printf("queue id do dsm tao = %d \n", dagq_id);
+    if (dagq_id == -1){
+        perror("dsmd init failed");
+        return -1;
+    }
     dag_init(&dag);
     while (1){
         sleep(2);
-        printf("sched deamon running ...\n");
         process_msg(dagq_id, &dag);
+        printf("xong\n");
     }
     dsm_halt(dagq_id);
     return 0;

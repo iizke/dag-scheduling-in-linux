@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include "dagsched.h"
 #include "dag.h"
-
+#include "avl.h"
 #define MAX_NPARENTS    5
 /**
  * TODO: do_dag_sched
@@ -77,6 +77,7 @@ int process_msg(int dagq_id, struct dag *dag)
     return 0;
 }
 
+/*
 int main (int argc, char **argv)
 {
     int dagq_id;
@@ -96,3 +97,5 @@ int main (int argc, char **argv)
     dsm_halt(dagq_id);
     return 0;
 }
+*/
+

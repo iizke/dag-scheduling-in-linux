@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-
+#include <assert.h>
 #include "dagsched.h"
 #include "dag.h"
 #include "avl.h"
@@ -97,10 +97,29 @@ int process_msg(int dagq_id, struct dag *dag)
     return 0;
 }
 
+struct compact_data {
+    int dagq_id;
+    struct dag *dag;
+};
+
+static void mq_thread(union sigval data)
+{
+    int dagq_id;
+    struct dag *d;
+    struct compact_data *cdata = data.sival_ptr;
+    printf("mq_thread \n");
+    assert(cdata != NULL);
+    dagq_id = cdata->dagq_id;
+    d = cdata->dag;
+    process_msg(dagq_id, d);
+}
+
 int main (int argc, char **argv)
 {
     int dagq_id;
     struct dag dag;
+    struct sigevent sigev;
+    struct compact_data cdata;
     dsm_init(&dagq_id);
     printf("queue id do dsm tao = %d \n", dagq_id);
     if (dagq_id == -1){
@@ -109,13 +128,21 @@ int main (int argc, char **argv)
     }
     dag_init(&dag);
 
-    while (1){
-        sleep(2);
-        process_msg(dagq_id, &dag);
-        printf("xong\n");
-    }
-    dsm_halt(dagq_id);
+//    while (1){
+//        sleep(2);
+//        process_msg(dagq_id, &dag);
+//        printf("xong\n");
+//    }
+
+    sigev.sigev_notify = SIGEV_THREAD;
+    sigev.sigev_notify_function = mq_thread;
+    sigev.sigev_notify_attributes = NULL;
+    cdata.dagq_id = dagq_id;
+    cdata.dag = &dag;
+    sigev.sigev_value.sival_ptr = &cdata;
+    mq_notify(dagq_id, &sigev);
+    perror("mq_notify");
+    pause();
+    //dsm_halt(dagq_id);
     return 0;
 }
-
-

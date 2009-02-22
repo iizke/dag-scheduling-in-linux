@@ -31,6 +31,7 @@
 #include <string.h>
 #include <time.h>
 #include "test.h"
+#include "avl.h"
 
 /* Insertion order. */
 enum insert_order
@@ -103,7 +104,7 @@ struct test_options
     int verbosity;                      /* Verbosity level, 0=default. */
     int nonstop;                        /* Don't stop after one error? */
   };
-
+
 /* Program name. */
 char *pgm_name;
 
@@ -114,7 +115,7 @@ char *pgm_name;
 int
 compare_ints (const void *pa, const void *pb, void *param)
 {
-  const int *a = pa;
+/*  const int *a = pa;
   const int *b = pb;
 
   if (*a < *b)
@@ -123,6 +124,16 @@ compare_ints (const void *pa, const void *pb, void *param)
     return +1;
   else
     return 0;
+    */
+    const int a = pa;
+    const int b = pb;
+
+    if (a < b)
+      return -1;
+    else if (a > b)
+      return +1;
+    else
+      return 0;
 }
 
 /* Prints |message| on |stderr|, which is formatted as for |printf()|,
@@ -153,7 +164,7 @@ xmalloc (size_t size)
     fail ("out of memory");
   return block;
 }
-
+
 /* Memory tracking allocator. */
 
 /* A memory block. */
@@ -408,7 +419,7 @@ mt_free (struct libavl_allocator *allocator, void *block)
   /* Block not in list. */
   printf ("    attempt to free unknown block %p (already freed?)\n", block);
 }
-
+
 /* Option parsing state. */
 struct option_state
   {
@@ -564,7 +575,7 @@ option_get (struct option_state *state, char **argp)
       return handle_short_option (state, argp);
     }
 }
-
+
 /* Command line parser. */
 
 /* If |a| is a prefix for |b| or vice versa, returns the length of the
@@ -845,7 +856,7 @@ parse_command_line (char **args, struct test_options *options)
         }
     }
 }
-
+
 /* Fills the |n| elements of |array[]| with a random permutation of the
    integers between |0| and |n - 1|. */
 static void
@@ -973,7 +984,7 @@ gen_deletions (size_t n, enum delete_order delete_order,
       assert (0);
     }
 }
-
+
 /* Choose and return an initial random seed based on the current time.
    Based on code by Lawrence Kirby <fred@genesis.demon.co.uk>. */
 unsigned
@@ -993,117 +1004,138 @@ time_seed (void)
 
   return seed;
 }
-
-int
-main (int argc, char *argv[])
+
+//
+//int
+//main (int argc, char *argv[])
+//{
+//  struct test_options opts;        /* Command-line options. */
+//  int *insert, *delete;                /* Insertion and deletion orders. */
+//  int success;                  /* Everything okay so far? */
+//
+//  /* Initialize |pgm_name|, using |argv[0]| if sensible. */
+//  pgm_name = argv[0] != NULL && argv[0][0] != '\0' ? argv[0] : "bst-test";
+//
+//  /* Parse command line into |options|. */
+//  parse_command_line (argv, &opts);
+//
+//  if (opts.verbosity >= 0)
+//    fputs ("bst-test for GNU libavl 2.0.2; use --help to get help.\n", stdout);
+//
+//  if (!opts.seed_given)
+//    opts.seed = time_seed () % 32768u;
+//
+//  insert = xmalloc (sizeof *insert * opts.node_cnt);
+//  delete = xmalloc (sizeof *delete * opts.node_cnt);
+//
+//  /* Run the tests. */
+//  success = 1;
+//  while (opts.iter_cnt--)
+//    {
+//      struct mt_allocator *alloc;
+//
+//      if (opts.verbosity >= 0)
+//        {
+//          printf ("Testing seed=%u", opts.seed);
+//          if (opts.alloc_incr)
+//            printf (", alloc arg=%d", opts.alloc_arg[0]);
+//          printf ("...\n");
+//          fflush (stdout);
+//        }
+//
+//      /* Generate insertion and deletion order.
+//         Seed them separately to ensure deletion order is
+//         independent of insertion order. */
+//      srand (opts.seed);
+//      gen_insertions (opts.node_cnt, opts.insert_order, insert);
+//
+//      srand (++opts.seed);
+//      gen_deletions (opts.node_cnt, opts.delete_order, insert, delete);
+//
+//      if (opts.verbosity >= 1)
+//        {
+//          int i;
+//
+//          printf ("  Insertion order:");
+//          for (i = 0; i < opts.node_cnt; i++)
+//            printf (" %d", insert[i]);
+//          printf (".\n");
+//
+//          if (opts.test == TST_CORRECTNESS)
+//            {
+//              printf ("Deletion order:");
+//              for (i = 0; i < opts.node_cnt; i++)
+//                printf (" %d", delete[i]);
+//              printf (".\n");
+//            }
+//        }
+//
+//      alloc = mt_create (opts.alloc_policy, opts.alloc_arg, opts.verbosity);
+//
+//      {
+//        int okay;
+//        struct libavl_allocator *a = mt_allocator (alloc);
+//
+//        switch (opts.test)
+//          {
+//          case TST_CORRECTNESS:
+//            okay = test_correctness (a, insert, delete, opts.node_cnt,
+//                                     opts.verbosity);
+//            break;
+//
+//          case TST_OVERFLOW:
+//            okay = test_overflow (a, insert, opts.node_cnt, opts.verbosity);
+//            break;
+//
+//          case TST_NULL:
+//            okay = 1;
+//            break;
+//
+//          default:
+//            assert (0);
+//          }
+//
+//        if (okay)
+//          {
+//            if (opts.verbosity >= 1)
+//              printf ("  No errors.\n");
+//          }
+//        else
+//          {
+//            success = 0;
+//            printf ("  Error!\n");
+//          }
+//      }
+//
+//      mt_destroy (alloc);
+//      opts.alloc_arg[0] += opts.alloc_incr;
+//
+//      if (!success && !opts.nonstop)
+//        break;
+//    }
+//
+//  free (delete);
+//  free (insert);
+//
+//  return success ? EXIT_SUCCESS : EXIT_FAILURE;
+//}
+/*int main()
 {
-  struct test_options opts;        /* Command-line options. */
-  int *insert, *delete;                /* Insertion and deletion orders. */
-  int success;                  /* Everything okay so far? */
+    struct avl_table *t = avl_create(compare_ints, NULL, NULL);
+    int v = 1, u = 2;
+    int *z;
+    //avl_probe(t, &v);
+    avl_insert(t, v);
+    v = 2;
+    avl_insert(t, v);
+    v = 4;
+    avl_insert(t, v);
+    v = 3;
+    avl_insert(t, v);
+    z = avl_find(t, u);
+    printf("size = %d \n", t->avl_count);
+    //printf("value z = %d", *(int *)z);
 
-  /* Initialize |pgm_name|, using |argv[0]| if sensible. */
-  pgm_name = argv[0] != NULL && argv[0][0] != '\0' ? argv[0] : "bst-test";
+    return 0;
+}*/
 
-  /* Parse command line into |options|. */
-  parse_command_line (argv, &opts);
-
-  if (opts.verbosity >= 0)
-    fputs ("bst-test for GNU libavl 2.0.2; use --help to get help.\n", stdout);
-
-  if (!opts.seed_given)
-    opts.seed = time_seed () % 32768u;
-
-  insert = xmalloc (sizeof *insert * opts.node_cnt);
-  delete = xmalloc (sizeof *delete * opts.node_cnt);
-
-  /* Run the tests. */
-  success = 1;
-  while (opts.iter_cnt--)
-    {
-      struct mt_allocator *alloc;
-
-      if (opts.verbosity >= 0)
-        {
-          printf ("Testing seed=%u", opts.seed);
-          if (opts.alloc_incr)
-            printf (", alloc arg=%d", opts.alloc_arg[0]);
-          printf ("...\n");
-          fflush (stdout);
-        }
-
-      /* Generate insertion and deletion order.
-         Seed them separately to ensure deletion order is
-         independent of insertion order. */
-      srand (opts.seed);
-      gen_insertions (opts.node_cnt, opts.insert_order, insert);
-
-      srand (++opts.seed);
-      gen_deletions (opts.node_cnt, opts.delete_order, insert, delete);
-
-      if (opts.verbosity >= 1)
-        {
-          int i;
-
-          printf ("  Insertion order:");
-          for (i = 0; i < opts.node_cnt; i++)
-            printf (" %d", insert[i]);
-          printf (".\n");
-
-          if (opts.test == TST_CORRECTNESS)
-            {
-              printf ("Deletion order:");
-              for (i = 0; i < opts.node_cnt; i++)
-                printf (" %d", delete[i]);
-              printf (".\n");
-            }
-        }
-
-      alloc = mt_create (opts.alloc_policy, opts.alloc_arg, opts.verbosity);
-
-      {
-        int okay;
-        struct libavl_allocator *a = mt_allocator (alloc);
-
-        switch (opts.test)
-          {
-          case TST_CORRECTNESS:
-            okay = test_correctness (a, insert, delete, opts.node_cnt,
-                                     opts.verbosity);
-            break;
-
-          case TST_OVERFLOW:
-            okay = test_overflow (a, insert, opts.node_cnt, opts.verbosity);
-            break;
-
-          case TST_NULL:
-            okay = 1;
-            break;
-
-          default:
-            assert (0);
-          }
-
-        if (okay)
-          {
-            if (opts.verbosity >= 1)
-              printf ("  No errors.\n");
-          }
-        else
-          {
-            success = 0;
-            printf ("  Error!\n");
-          }
-      }
-
-      mt_destroy (alloc);
-      opts.alloc_arg[0] += opts.alloc_incr;
-
-      if (!success && !opts.nonstop)
-        break;
-    }
-
-  free (delete);
-  free (insert);
-
-  return success ? EXIT_SUCCESS : EXIT_FAILURE;
-}

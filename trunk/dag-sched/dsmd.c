@@ -9,10 +9,17 @@
 #include <sched.h>
 #include <mqueue.h>
 #include <stdio.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
 #include "dagsched.h"
 #include "dag.h"
 #include "avl.h"
-#define MAX_NPARENTS    5
+
+#define MAX_NPARENTS    3
+#define MAX_PRIO        19
+#define MIN_PRIO        0
+
 /**
  * TODO: do_dag_sched
  * Description: set priority and sched policy to task
@@ -23,14 +30,26 @@ int do_dag_sched(struct node_info *node)
     int p;
     if (!node)
         return -1;
-    param.__sched_priority = 50 + MAX_NPARENTS*node->nchildren;
-    p = node->nparents;
+//    param.__sched_priority = 50 + MAX_NPARENTS*node->nchildren;
+//    p = node->nparents;
+//    if (node->nparents >= MAX_NPARENTS)
+//        p = MAX_NPARENTS - 1;
+//    param.__sched_priority -= p;
+//    printf("prio cua %d la %d \n", node->pid, param.__sched_priority);
+//    sched_setparam(node->pid, &param);
+//    perror("sched_setparam");
+
+    p = 10 + MAX_NPARENTS*node->nchildren;
     if (node->nparents >= MAX_NPARENTS)
-        p = MAX_NPARENTS - 1;
-    param.__sched_priority -= p;
-    printf("prio cua %d la %d \n", node->pid, param.__sched_priority);
-    sched_setparam(node->pid, &param);
-    perror("sched_setparam");
+        p += (MAX_NPARENTS - 1);
+    else
+        p += node->nparents;
+    if (p < MIN_PRIO)
+        p = MIN_PRIO;
+    if (p > MAX_PRIO)
+        p = MAX_PRIO;
+    setpriority(PRIO_PROCESS, node->pid, p);
+    perror("setpriority");
     return 0;
 }
 
@@ -38,6 +57,7 @@ int process_msg(int dagq_id, struct dag *dag)
 {
     struct mq_attr attr;
     int i;
+    printf("Do process mesg \n");
     do {
         int size;
         struct msg_info msginfo;
@@ -77,7 +97,6 @@ int process_msg(int dagq_id, struct dag *dag)
     return 0;
 }
 
-/*
 int main (int argc, char **argv)
 {
     int dagq_id;
@@ -89,6 +108,7 @@ int main (int argc, char **argv)
         return -1;
     }
     dag_init(&dag);
+
     while (1){
         sleep(2);
         process_msg(dagq_id, &dag);
@@ -97,5 +117,5 @@ int main (int argc, char **argv)
     dsm_halt(dagq_id);
     return 0;
 }
-*/
+
 

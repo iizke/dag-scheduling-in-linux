@@ -7,6 +7,9 @@
 #include <fcntl.h>
 #include <mpi.h>
 #include <stdlib.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
 #include "dagsched.h"
 
 int main(int argc, char **argv)
@@ -21,6 +24,7 @@ int main(int argc, char **argv)
         goto end;
     dsm_add_task(qid, pid);
     sleep(5);
+    printf("DO UU TIEN CUA %d LA %d \n",pid, getpriority(PRIO_PROCESS, pid));
     dsm_remove_task(qid, pid);
 end:
     perror("BUG");

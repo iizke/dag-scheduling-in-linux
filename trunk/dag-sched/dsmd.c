@@ -26,7 +26,7 @@
  */
 int do_dag_sched(struct node_info *node)
 {
-    struct sched_param param;
+//    struct sched_param param;
     int p;
     if (!node)
         return -1;
@@ -48,7 +48,8 @@ int do_dag_sched(struct node_info *node)
         p = MIN_PRIO;
     if (p > MAX_PRIO)
         p = MAX_PRIO;
-    setpriority(PRIO_PROCESS, node->pid, p);
+    printf("pid = %d, prio p = %d \n", node->pid, p);
+    printf("return of setprio is %d \n",setpriority(PRIO_PROCESS, node->pid, p));
     perror("setpriority");
     return 0;
 }
@@ -112,21 +113,36 @@ static void mq_thread(union sigval data)
     dagq_id = cdata->dagq_id;
     d = cdata->dag;
     process_msg(dagq_id, d);
+    {
+        struct sigevent sigev;
+        struct compact_data cdata;
+        sigev.sigev_notify = SIGEV_THREAD;
+        sigev.sigev_notify_function = mq_thread;
+        sigev.sigev_notify_attributes = NULL;
+        cdata.dagq_id = dagq_id;
+        cdata.dag = d;
+        sigev.sigev_value.sival_ptr = &cdata;
+        printf("thiet lap notify o thread\n");
+        mq_notify(dagq_id, &sigev);
+        perror("mq_notify");
+        pause();
+    }
 }
 
 int main (int argc, char **argv)
 {
     int dagq_id;
-    struct dag dag;
+    struct dag * dag = (struct dag*)malloc(sizeof (struct dag));
     struct sigevent sigev;
     struct compact_data cdata;
+    mq_unlink("/HHNAM");
     dsm_init(&dagq_id);
     printf("queue id do dsm tao = %d \n", dagq_id);
     if (dagq_id == -1){
         perror("dsmd init failed");
         return -1;
     }
-    dag_init(&dag);
+    dag_init(dag);
 
 //    while (1){
 //        sleep(2);
@@ -138,8 +154,9 @@ int main (int argc, char **argv)
     sigev.sigev_notify_function = mq_thread;
     sigev.sigev_notify_attributes = NULL;
     cdata.dagq_id = dagq_id;
-    cdata.dag = &dag;
+    cdata.dag = dag;
     sigev.sigev_value.sival_ptr = &cdata;
+    printf("thiet lap notify \n");
     mq_notify(dagq_id, &sigev);
     perror("mq_notify");
     pause();

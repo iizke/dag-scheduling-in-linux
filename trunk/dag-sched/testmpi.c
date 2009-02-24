@@ -31,10 +31,10 @@ int main(int argc, char **argv)
     if (rank == 0){
         sleep (5);
         buf = malloc(sizeof(*buf) * 100);
-        err = MPI_Send(&buf, 100, MPI_INT, 1, 0, MPI_COMM_WORLD);
+        MPI_Send(&buf, 100, MPI_INT, 1, 0, MPI_COMM_WORLD);
     } else if (rank == 1) {
-        buf = malloc(sizeof(*buf) * arg1);
-        err = MPI_Recv(&buf, 100, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+        buf = malloc(sizeof(*buf) * 100);
+        MPI_Recv(&buf, 100, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
         // add connection
     }
     sleep(5);

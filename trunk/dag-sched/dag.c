@@ -122,10 +122,13 @@ int __edge_list_remove_edge(struct edge_list *list, int edge_id)
 
     if (edge_id < 0)
         return 0;
-    list[edge_id].state = EDGE_STATE_INVALID;
-    list[edge_id].child->nparents--;
-    list[edge_id].parent->nchildren--;
-    list[edge_id].weight = 0;
+    if (list->list[edge_id].state == EDGE_STATE_VALID) {
+	    list->size--;
+    }
+    list->list[edge_id].state = EDGE_STATE_INVALID;
+    list->list[edge_id].child->nparents--;
+    list->list[edge_id].parent->nchildren--;
+    list->list[edge_id].weight = 0;
     list->size--;
     return 0;
 }
@@ -361,16 +364,25 @@ int dag_add_mpi_edge(struct dag *d, int from_rank, int to_rank)
 	if (!d || from_rank >= MAX_NODES || to_rank >= MAX_NODES)
 		return -1;
 	if (d->node_list.list[from_rank].state == NODE_STATE_INVALID){
+		d->node_list.list[from_rank].nchildren = 0;
+		d->node_list.list[from_rank].nparents = 0;
 		d->node_list.size++;
 	}
-	if (d->node_list.list[to_rank].state == NODE_STATE_INVALID)
+	if (d->node_list.list[to_rank].state == NODE_STATE_INVALID) {
+		d->node_list.list[to_rank].nchildren = 0;
+		d->node_list.list[to_rank].nparents = 0;				 
 		d->node_list.size++;
+	}
 	d->node_list.list[from_rank].state = NODE_STATE_VALID;
 	d->node_list.list[to_rank].state = NODE_STATE_VALID;
 	eid = calc_edge_index(d->node_list.size, from_rank, to_rank);
 	if (d->edge_list.list[eid].state == EDGE_STATE_INVALID)
 		d->edge_list.size++;
 	d->edge_list.list[eid].state = EDGE_STATE_VALID;
+	d->edge_list.list[eid].child = &d->node_list.list[to_rank];
+        d->edge_list.list[eid].parent = &d->node_list.list[from_rank];
+	d->node_list.list[from_rank].nchildren++;
+	d->node_list.list[to_rank].nparents++;
 	return 0;
 }
 /**
@@ -393,6 +405,18 @@ dag_remove_edge(struct dag *d, int from_pid, int to_pid)
     return 0;
 }
 
+int dag_remove_mpi_edge(struct dag *d, int fromrank, int torank)
+{
+	int eid = calc_edge_index(d->node_list.size, fromrank, torank);
+	if (d->edge_list.list[eid].state == EDGE_STATE_VALID) {
+		d->edge_list.list[eid].state = EDGE_STATE_INVALID;
+		d->edge_list.size--;
+		// TODO: Check node state (donot implement)
+		d->node_list.list[fromrank].nchildren--;
+		d->node_list.list[torank].nparent--;
+	}
+	return 0;
+}
 /**
  * TODO: dag_get_node
  * Description:
@@ -411,7 +435,7 @@ dag_remove_edge(struct dag *d, int from_pid, int to_pid)
 int
 dag_get_node(struct dag *d, int rank, struct node_info **n)
 {
-    (*n) = &d->node_list[rank];
+    (*n) = &d->node_list.list[rank];
     if ((*n)->state == NODE_STATE_INVALID)
         return -1;
     return 0;

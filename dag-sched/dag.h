@@ -29,10 +29,12 @@ struct node_info {
     int nchildren;          /* # of nodes on which are depended by this node */
     int state;              /* valid or invalid */
 };
-
 #define MAX_NODES   40
 #define MAX_EDGES   (MAX_NODES * (MAX_NODES - 1) / 2)
-
+struct node_list {
+	struct node_info list[MAX_NODES];
+	int size;
+};
 //struct edge {
 //    struct edge *next;
 //    struct edge *prev;
@@ -57,20 +59,23 @@ struct edge {
     char state;
 };
 
+struct edge_list {
+	struct edge list[MAX_EDGES];
+	int size;
+};
+
 struct dag {
 //    NODE_LIST *node_list;
 //    struct edge_list *edge_list;
-    struct node_info node_list[MAX_PROCESSES];
-    struct edge edge_list[MAX_EDGES];
-    int nnodes;
-    int nedges;
+    struct node_list node_list;
+    struct edge_list edge_list;
 };
 
-int dag_add_edge(struct dag *d, int from_pid, int to_pid, OUT struct edge **e);
-int dag_remove_edge(struct dag *d, int from_pid, int to_pid);
-int dag_add_node(struct dag *d, int pid, struct node_info **info);
-int dag_remove_node(struct dag *d, int pid);
-int dag_get_node(struct dag *d, int pid, struct node_info **n);
+//int dag_add_edge(struct dag *d, int from_pid, int to_pid, OUT struct edge **e);
+//int dag_remove_edge(struct dag *d, int from_pid, int to_pid);
+//int dag_add_node(struct dag *d, int pid, struct node_info **info);
+//int dag_remove_node(struct dag *d, int pid);
+//int dag_get_node(struct dag *d, int pid, struct node_info **n);
 int dag_init();
 int dag_clean();
 

@@ -43,11 +43,16 @@
 //    return 0;
 //}
 
-int edge_list_destroy(struct edge *list)
+int edge_list_destroy(struct edge_list *list)
 {
     int i;
-    for (i=0; i<MAX_EDGES; i++)
-        list[i].state = EDGE_STATE_INVALID;
+    if (!list)
+	    return -1;
+    for (i=0; i<MAX_EDGES; i++) {
+        list->list[i].state = EDGE_STATE_INVALID;
+	list->list[i].weight = 0;
+    }
+    list->size = 0;
     return 0;
 }
 /**
@@ -110,8 +115,7 @@ int edge_list_destroy(struct edge *list)
 //    return 0;
 //}
 
-int
-__edge_list_remove_edge(struct edge *list, int edge_id)
+int __edge_list_remove_edge(struct edge_list *list, int edge_id)
 {
     struct edge *prev = NULL;
     struct edge *next = NULL;
@@ -121,28 +125,26 @@ __edge_list_remove_edge(struct edge *list, int edge_id)
     list[edge_id].state = EDGE_STATE_INVALID;
     list[edge_id].child->nparents--;
     list[edge_id].parent->nchildren--;
+    list[edge_id].weight = 0;
+    list->size--;
     return 0;
 }
 
 int calc_edge_index(int nnodes, int pid, int cid)
 {
-    return pid*(nnodes-1) + cid + 1 - (pid+1)*pid/2;
+    return (pid * (nnodes - 1) + cid + 1 - (pid + 1) * pid / 2 );
 }
 
 int
-edge_list_remove_edge(struct edge *list, int nnodes, struct node_info *parent,
-                struct node_info *child)
+edge_list_remove_edge(struct dag* d, int pid, int cid)
 {
-    int i;
     int edgeid;
-    struct edge *e = NULL;
-    struct edge *next = NULL;
 
     if (!list) {
         printf("edge_list pointer is null \n");
         return -1;
     }
-    edgeid = calc_edge_index(nnodes, parent->rank, child->rank);
+    edgeid = calc_edge_index(d->node_list.size, pid, cid);
     __edge_list_remove_edge(list, edgeid);
     return 0;
 }
@@ -170,10 +172,11 @@ edge_list_remove_edge(struct edge *list, int nnodes, struct node_info *parent,
 //    return 0;
 //}
 
-int edge_list_add_edge(struct edge *list, int nnodes, int pid, int cid)
-{
-    int eid = calc_edge_index(nnodes, pid, cid);
-    list[eid].state = EDGE_STATE_VALID;
+int edge_list_add_edge(struct edge_list *list, int eid)
+{   
+//	list[eid].state = EDGE_STATE_VALID;
+//	list->size++;
+	return eid;
 }
 
 /**
@@ -217,6 +220,15 @@ int edge_list_add_edge(struct edge *list, int nnodes, int pid, int cid)
 //    return 0;
 //}
 
+int edge_list_remove_node(struct edge_list *list, int nid)
+{
+	if (list->list[eid].state == EDGE_STATE_INVALID)
+		return 0;
+        list->list[eid].state == EDGE_STATE_INVALID;
+	list->size--;
+	return 0;
+}
+
 /* TODO: dag_nodelist_compare
  * Description: comparison function of avl tree
  */
@@ -254,7 +266,17 @@ dag_add_node(struct dag *d, int pid, struct node_info **n)
 //    avl_insert(d->node_list, node_info);
 //    printf("dag-add-node: add %d, dag co %d node \n",pid, d->node_list->avl_count);
 //    (*n) = node_info;
-    return 0;
+
+	if (d->node_list.list[pid].state == NODE_STATE_VALID) {
+		d->node_list[pid].nparents = 0;
+		d->node_list[pid].nchildren = 0;
+		(*n) = &(d->node_list.list[pid]);
+		return 0;
+	}
+	d->node_list.list[pid].state = NODE_STATE_VALID;
+	d->node_list.size++;
+	(*n) = &(d->node_list.list[pid]);
+	return 0;
 }
 
 /**
@@ -276,7 +298,29 @@ dag_remove_node(struct dag *d, int pid)
 //    edge_list_remove_node(d->edge_list, node);
 //    avl_delete(d->node_list, &node_info);
 //    printf("dag-remove-node: remove %d, dag co %d node \n",pid, d->node_list->avl_count);
-    return 0;
+
+	int i, j;
+	if (d->node_list.list[pid].state == NODE_STATE_VALID){
+		d->node_list.list[pid].nchildren = 0;
+		d->node_list.list[pid].nparents = 0;
+		d->node_list.size--;
+	}
+	d->node_list.list[pid].state = NODE_STATE_INVALID;
+
+	for (i=0; i<pid; i++){
+		int eid = calc_edge_index(d->node_list.size, i, pid);
+		if (d->edge_list.list[eid].state == EDGE_STATE_VALID)
+			d->edge_list.size--;
+		d->edge_list.list[eid].state = EDGE_STATE_INVALID;
+	}
+
+	for (i=pid+1; i<MAX_NODES; i++){
+		int eid = calc_edge_index(d->node_list.size, pid, i);
+		if (d->edge_list.list[eid].state == EDGE_STATE_VALID)
+			d->edge_list.size--;
+		d->edge_list.list[eid].state = EDGE_STATE_INVALID;
+	}
+	return 0;
 }
 
 /**
@@ -311,6 +355,24 @@ dag_add_edge(struct dag *d, int from_pid, int to_pid, OUT struct edge **e)
     return 0;
 }
 
+int dag_add_mpi_edge(struct dag *d, int from_rank, int to_rank)
+{
+	int eid;
+	if (!d || from_rank >= MAX_NODES || to_rank >= MAX_NODES)
+		return -1;
+	if (d->node_list.list[from_rank].state == NODE_STATE_INVALID){
+		d->node_list.size++;
+	}
+	if (d->node_list.list[to_rank].state == NODE_STATE_INVALID)
+		d->node_list.size++;
+	d->node_list.list[from_rank].state = NODE_STATE_VALID;
+	d->node_list.list[to_rank].state = NODE_STATE_VALID;
+	eid = calc_edge_index(d->node_list.size, from_rank, to_rank);
+	if (d->edge_list.list[eid].state == EDGE_STATE_INVALID)
+		d->edge_list.size++;
+	d->edge_list.list[eid].state = EDGE_STATE_VALID;
+	return 0;
+}
 /**
  * TODO: dag_remove_edge
  * Description: wrapper of _dag_remove_edge

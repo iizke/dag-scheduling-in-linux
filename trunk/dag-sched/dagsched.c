@@ -70,6 +70,19 @@ int dsm_remove_connection(mqd_t dagq_id, int from_pid, int to_pid)
     return 0;
 }
 
+int dsm_add_mpi_connection(mqd_t dagq_id, int from_rank, int to_rank)
+{
+    struct msg_info msginfo;
+    msginfo.cmd = CMD_ADD_MPI_CONNECTION;
+    msginfo.pid1 = -1;
+    msginfo.rank1 = from_rank;
+    msginfo.pid2 = -1;
+    msginfo.rank2 = to_rank;
+    if (to_rank < 0)
+        msginfo.pid2 = getpid();
+    mq_send(dagq_id, (char*)&msginfo, sizeof(struct msg_info), MSG_PRIO);
+    return 0;
+}
 /**
  * TODO: dsm_init
  * Description: Init DAG Scheduling Module
@@ -80,11 +93,11 @@ int dsm_init(mqd_t *dagq_id)
     if (!dagq_id)
         return -1;
     attr.mq_curmsgs = 0;
-    attr.mq_flags = O_NONBLOCK;
+    attr.mq_flags = 0;
     attr.mq_maxmsg = MAX_DAGQ_SIZE;
     attr.mq_msgsize = sizeof(struct msg_info);
     //mq_unlink(DAG_MSQ_NAME);
-    (*dagq_id) = mq_open(DAG_MSQ_NAME, O_RDWR | O_CREAT | O_NONBLOCK,
+    (*dagq_id) = mq_open(DAG_MSQ_NAME, O_RDWR | O_CREAT,
                     S_IRWXU | S_IRWXG, &attr);
     //dag_init(&dag);
     return 0;

@@ -92,6 +92,8 @@ int process_msg(int dagq_id, struct dag *dag)
                     do_dag_sched(node);
                     break;
                 case CMD_ADD_MPI_CONNECTION:
+		    dag_add_mpi_connection(dag, msginfo.rank1, msginfo.rank2);
+		    do_dag_sched(&d->node_list.list[msgino.rank1]);
                     //dag_get_pid(dag, msginfo.pid1, msginfo.pid2, &edge);
                     //do_dag_sched(edge->child);
                     //do_dag_sched(edge->parent);

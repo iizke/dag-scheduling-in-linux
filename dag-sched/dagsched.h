@@ -8,13 +8,18 @@
 #ifndef DAGSCHEDD_H_
 #define DAGSCHEDD_H_
 
-#define DAG_MSQ_NAME            "/HHNAM"
-#define MSG_PRIO                1
-#define MAX_DAGQ_SIZE           7
-#define CMD_ADD_TASK            0
-#define CMD_REMOVE_TASK         1
-#define CMD_ADD_CONNECTION      2
-#define CMD_REMOVE_CONNECTION   3
+#define DAG_MSQ_NAME                "/HHNAM"
+#define MSG_PRIO                    1
+#define MAX_DAGQ_SIZE               10
+
+#define CMD_ADD_TASK                0
+#define CMD_REMOVE_TASK             1
+#define CMD_ADD_CONNECTION          2
+#define CMD_REMOVE_CONNECTION       3
+#define CMD_ADD_MPI_CONNECTION      4
+#define CMD_ADD_MPI_TASK            5
+#define CMD_REMOVE_MPI_TASK         6
+#define CMD_REMOVE_MPI_CONNECTION   7
 
 struct msg_info {
     int cmd;

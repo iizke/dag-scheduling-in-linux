@@ -9,8 +9,11 @@
 #include <sched.h>
 #include <mqueue.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <assert.h>
 #include "dagsched.h"
 #include "dag.h"
@@ -48,9 +51,9 @@ int do_dag_sched(struct node_info *node)
         p = MIN_PRIO;
     if (p > MAX_PRIO)
         p = MAX_PRIO;
-    printf("pid = %d, prio p = %d \n", node->pid, p);
-    printf("return of setprio is %d \n",setpriority(PRIO_PROCESS, node->pid, p));
-    perror("setpriority");
+//    printf("pid = %d, prio p = %d \n", node->pid, p);
+    setpriority(PRIO_PROCESS, node->pid, p);
+    //perror("setpriority");
     return 0;
 }
 
@@ -58,12 +61,12 @@ int process_msg(int dagq_id, struct dag *dag)
 {
     struct mq_attr attr;
     int i;
-    printf("Do process mesg \n");
+    int size;
+
+    mq_getattr(dagq_id, &attr);
+    size = attr.mq_curmsgs;
     do {
-        int size;
         struct msg_info msginfo;
-        mq_getattr(dagq_id, &attr);
-        size = attr.mq_curmsgs;
         for (i = 0; i < size; i++) {
             struct node_info *node = NULL;
             struct edge *edge = NULL;
@@ -71,12 +74,10 @@ int process_msg(int dagq_id, struct dag *dag)
             switch (msginfo.cmd){
                 case CMD_ADD_TASK:
                     dag_add_node(dag, msginfo.pid1, &node);
-                    printf("Da add task %d \n", msginfo.pid1);
                     do_dag_sched(node);
                     break;
                 case CMD_REMOVE_TASK:
                     dag_remove_node(dag, msginfo.pid1);
-                    printf("Da remove task %d \n", msginfo.pid1);
                     break;
                 case CMD_ADD_CONNECTION:
                     dag_add_edge(dag, msginfo.pid1, msginfo.pid2, &edge);
@@ -90,11 +91,24 @@ int process_msg(int dagq_id, struct dag *dag)
                     dag_get_node(dag, msginfo.pid2, &node);
                     do_dag_sched(node);
                     break;
+                case CMD_ADD_MPI_CONNECTION:
+                    //dag_get_pid(dag, msginfo.pid1, msginfo.pid2, &edge);
+                    //do_dag_sched(edge->child);
+                    //do_dag_sched(edge->parent);
+                    break;
+                case CMD_ADD_MPI_TASK:
+                    break;
+                case CMD_REMOVE_MPI_CONNECTION:
+                    break;
+                case CMD_REMOVE_MPI_TASK:
+                    break;
                 default:
                     break;
             }
         }
-    } while (attr.mq_curmsgs == 0);
+        mq_getattr(dagq_id, &attr);
+        size = attr.mq_curmsgs;
+    } while (size > 0);
     return 0;
 }
 
@@ -108,25 +122,25 @@ static void mq_thread(union sigval data)
     int dagq_id;
     struct dag *d;
     struct compact_data *cdata = data.sival_ptr;
-    printf("mq_thread \n");
+    struct sigevent sigev;
+    struct node_info *node;
     assert(cdata != NULL);
     dagq_id = cdata->dagq_id;
     d = cdata->dag;
-    process_msg(dagq_id, d);
-    {
-        struct sigevent sigev;
-        struct compact_data cdata;
-        sigev.sigev_notify = SIGEV_THREAD;
-        sigev.sigev_notify_function = mq_thread;
-        sigev.sigev_notify_attributes = NULL;
-        cdata.dagq_id = dagq_id;
-        cdata.dag = d;
-        sigev.sigev_value.sival_ptr = &cdata;
-        printf("thiet lap notify o thread\n");
-        mq_notify(dagq_id, &sigev);
-        perror("mq_notify");
-        pause();
+    printf("mq_thread: dag node list co %d node \n",d->node_list->avl_count);
+    if (d->node_list->avl_count == 1){
+        node = d->node_list->avl_root->avl_data;
+        printf("NODE CON TRONG DAG LA %d\n\n",node->pid);
     }
+    sigev.sigev_notify = SIGEV_THREAD;
+    sigev.sigev_notify_function = mq_thread;
+    sigev.sigev_notify_attributes = NULL;
+    sigev.sigev_value.sival_ptr = cdata;
+
+    process_msg(dagq_id, d);
+    mq_notify(dagq_id, &sigev);
+    //perror("mq_notify");
+    //pause();
 }
 
 int main (int argc, char **argv)
@@ -137,29 +151,28 @@ int main (int argc, char **argv)
     struct compact_data cdata;
     mq_unlink("/HHNAM");
     dsm_init(&dagq_id);
-    printf("queue id do dsm tao = %d \n", dagq_id);
     if (dagq_id == -1){
         perror("dsmd init failed");
         return -1;
     }
     dag_init(dag);
 
-//    while (1){
-//        sleep(2);
-//        process_msg(dagq_id, &dag);
-//        printf("xong\n");
-//    }
+    while (1){
+        sleep(1);
+        process_msg(dagq_id, dag);
+        printf("DAG CON %d NODE \n", dag->node_list->avl_count);
+    }
 
-    sigev.sigev_notify = SIGEV_THREAD;
-    sigev.sigev_notify_function = mq_thread;
-    sigev.sigev_notify_attributes = NULL;
-    cdata.dagq_id = dagq_id;
-    cdata.dag = dag;
-    sigev.sigev_value.sival_ptr = &cdata;
-    printf("thiet lap notify \n");
-    mq_notify(dagq_id, &sigev);
-    perror("mq_notify");
-    pause();
-    //dsm_halt(dagq_id);
+//    sigev.sigev_notify = SIGEV_THREAD;
+//    sigev.sigev_notify_function = mq_thread;
+//    sigev.sigev_notify_attributes = NULL;
+//    cdata.dagq_id = dagq_id;
+//    cdata.dag = dag;
+//    sigev.sigev_value.sival_ptr = &cdata;
+//    mq_notify(dagq_id, &sigev);
+//    //perror("mq_notify");
+//    pause();
+//    printf("HERE after pause \n");
+//    //dsm_halt(dagq_id);
     return 0;
 }

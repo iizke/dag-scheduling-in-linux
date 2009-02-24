@@ -16,33 +16,54 @@
 typedef struct avl_node NODE;
 typedef struct avl_table NODE_LIST;
 
+#define NODE_STATE_INVALID  0
+#define NODE_STATE_VALID    1
+
 struct node_info {
     int pid;                /* process id provided by system */
     int rank;               /* virtual id */
     char app_name[32];      /* application name */
-    struct edge *parent_edge_list;
+    //struct edge *parent_edge_list;
     int nparents;           /* # of nodes depending on this node*/
-    struct edge *children_edge_list;
+    //struct edge *children_edge_list;
     int nchildren;          /* # of nodes on which are depended by this node */
+    int state;              /* valid or invalid */
 };
+
+#define MAX_NODES   40
+#define MAX_EDGES   (MAX_NODES * (MAX_NODES - 1) / 2)
+
+//struct edge {
+//    struct edge *next;
+//    struct edge *prev;
+//    struct node_info *parent;
+//    struct node_info *child;
+//    int weight;             /* default value is 0 */
+//    char state;             /* valid or pending */
+//};
+
+//struct edge_list {
+//    struct edge *list;
+//    int size;
+//};
+
+#define EDGE_STATE_INVALID      0
+#define EDGE_STATE_VALID        1
 
 struct edge {
-    struct edge *next;
-    struct edge *prev;
     struct node_info *parent;
     struct node_info *child;
-    int weight;             /* default value is 0 */
-    char state;             /* valid or pending */
-};
-
-struct edge_list {
-    struct edge *list;
-    int size;
+    int weight;
+    char state;
 };
 
 struct dag {
-    NODE_LIST *node_list;
-    struct edge_list *edge_list;
+//    NODE_LIST *node_list;
+//    struct edge_list *edge_list;
+    struct node_info node_list[MAX_PROCESSES];
+    struct edge edge_list[MAX_EDGES];
+    int nnodes;
+    int nedges;
 };
 
 int dag_add_edge(struct dag *d, int from_pid, int to_pid, OUT struct edge **e);

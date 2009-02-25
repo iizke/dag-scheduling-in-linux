@@ -131,16 +131,18 @@ __edge_list_remove_edge(struct edge_list *list, int edge_id)
 }
 
 int
-calc_edge_index(int nnodes, int pid, int cid)
+calc_edge_index(int pid, int cid)
 {
-    return (pid * (nnodes - 1) + cid + 1 - (pid + 1) * pid / 2);
+    int id = (pid * (MAX_NODES - 1) + cid - 1 - (pid + 1) * pid / 2);
+    //printf("calc_edge_index: p=%d, c=%d, e=%d \n",pid, cid, id);
+    return id;
 }
 
 int
 edge_list_remove_edge(struct dag* d, int pid, int cid)
 {
     int edgeid;
-    edgeid = calc_edge_index(d->node_list.size, pid, cid);
+    edgeid = calc_edge_index(pid, cid);
     __edge_list_remove_edge(&d->edge_list, edgeid);
     return 0;
 }
@@ -296,7 +298,10 @@ dag_remove_mpi_node(struct dag *d, int rank)
 
     int i;
     if (d->node_list.list[rank].state == NODE_STATE_VALID) {
-        d->node_list.size--;
+        if (d->node_list.size <= 0)
+            printf("dag-remove-mpinode: problem node size <= 0 \n");
+        else
+            d->node_list.size--;
     }
     d->node_list.list[rank].state = NODE_STATE_INVALID;
     d->node_list.list[rank].nchildren = 0;
@@ -304,19 +309,27 @@ dag_remove_mpi_node(struct dag *d, int rank)
 
     // adjust edge list
     for (i = 0; i < rank; i++) {
-        int eid = calc_edge_index(d->node_list.size, i, rank);
+        int eid = calc_edge_index(i, rank);
         if (d->edge_list.list[eid].state == EDGE_STATE_VALID) {
-            d->edge_list.size--;
-            d->node_list.list[i].nchildren--;
+            if (d->edge_list.size <= 0)
+                printf("dag-remove-mpinode: problem edge size <= 0 \n");
+            else {
+                d->edge_list.size--;
+                d->node_list.list[i].nchildren--;
+            }
         }
         d->edge_list.list[eid].state = EDGE_STATE_INVALID;
     }
 
     for (i = rank + 1; i < MAX_NODES; i++) {
-        int eid = calc_edge_index(d->node_list.size, rank, i);
+        int eid = calc_edge_index(rank, i);
         if (d->edge_list.list[eid].state == EDGE_STATE_VALID) {
-            d->edge_list.size--;
-            d->node_list.list[i].nparents--;
+            if (d->edge_list.size <= 0)
+                printf("dag-remove-mpinode: problem edge size <= 0 \n");
+            else {
+                d->edge_list.size--;
+                d->node_list.list[i].nparents--;
+            }
         }
         d->edge_list.list[eid].state = EDGE_STATE_INVALID;
     }
@@ -372,7 +385,7 @@ dag_add_mpi_edge(struct dag *d, int from_rank, int to_rank)
         d->node_list.list[to_rank].state = NODE_STATE_VALID;
         d->node_list.size++;
     }
-    eid = calc_edge_index(d->node_list.size, from_rank, to_rank);
+    eid = calc_edge_index(from_rank, to_rank);
     if (d->edge_list.list[eid].state == EDGE_STATE_INVALID) {
         d->edge_list.list[eid].state = EDGE_STATE_VALID;
         d->edge_list.list[eid].child = &d->node_list.list[to_rank];
@@ -406,13 +419,17 @@ dag_remove_edge(struct dag *d, int from_pid, int to_pid)
 int
 dag_remove_mpi_edge(struct dag *d, int fromrank, int torank)
 {
-    int eid = calc_edge_index(d->node_list.size, fromrank, torank);
+    int eid = calc_edge_index(fromrank, torank);
     if (d->edge_list.list[eid].state == EDGE_STATE_VALID) {
         d->edge_list.list[eid].state = EDGE_STATE_INVALID;
-        d->edge_list.size--;
-        // TODO: Check node state (donot implement)
-        d->node_list.list[fromrank].nchildren--;
-        d->node_list.list[torank].nparents--;
+        if (d->edge_list.size <= 0) {
+            printf("dag-remove-mpiedge: problem edge size <= 0 \n");
+        } else {
+            d->edge_list.size--;
+            // TODO: Check node state (donot implement)
+            d->node_list.list[fromrank].nchildren--;
+            d->node_list.list[torank].nparents--;
+        }
     }
     return 0;
 }
@@ -496,5 +513,7 @@ dag_clean(struct dag *d)
 {
     //    avl_destroy(d->node_list, NULL);
     //    edge_list_destroy(d->edge_list);
+
+    dag_init(d);
     return 0;
 }

@@ -19,7 +19,7 @@
 #include "dag.h"
 #include "avl.h"
 
-#define MAX_NPARENTS    3
+#define MAX_NPARENTS    5
 #define MAX_PRIO        19
 #define MIN_PRIO        0
 
@@ -42,15 +42,16 @@ do_dag_sched(struct node_info *node)
     //    sched_setparam(node->pid, &param);
     //    perror("sched_setparam");
 
-    p = 10 + MAX_NPARENTS * node->nchildren;
-    if (node->nparents >= MAX_NPARENTS)
-        p += (MAX_NPARENTS - 1);
+    p = 5 + MAX_NPARENTS * node->nchildren;
+    if ((2*node->nparents) >= MAX_NPARENTS)
+        p -= (MAX_NPARENTS - 1);
     else
-        p += node->nparents;
+        p -= (2*node->nparents);
     if (p < MIN_PRIO) p = MIN_PRIO;
     if (p > MAX_PRIO) p = MAX_PRIO;
     //    printf("pid = %d, prio p = %d \n", node->pid, p);
     setpriority(PRIO_PROCESS, node->pid, p);
+    printf("do dag sched: node %d, p = %d, c= %d, prio = %d \n", node->pid, node->nparents, node->nchildren, p);
     //perror("setpriority");
     return 0;
 }
@@ -155,8 +156,8 @@ main(int argc, char **argv)
 {
     int dagq_id;
     struct dag * dag = (struct dag*) malloc(sizeof(struct dag));
-    //struct sigevent sigev;
-    //struct compact_data cdata;
+    struct sigevent sigev;
+    struct compact_data cdata;
     mq_unlink("/HHNAM");
     dsm_init(&dagq_id);
     if (dagq_id == -1) {
@@ -165,22 +166,21 @@ main(int argc, char **argv)
     }
     dag_init(dag);
 
-    while (1) {
-        sleep(1);
-        process_msg(dagq_id, dag);
-        printf("dag con %d node \n", dag->node_list.size);
-    }
+//    while (1) {
+//        sleep(1);
+//        process_msg(dagq_id, dag);
+//        printf("dag con %d node \n", dag->node_list.size);
+//    }
 
-    //    sigev.sigev_notify = SIGEV_THREAD;
-    //    sigev.sigev_notify_function = mq_thread;
-    //    sigev.sigev_notify_attributes = NULL;
-    //    cdata.dagq_id = dagq_id;
-    //    cdata.dag = dag;
-    //    sigev.sigev_value.sival_ptr = &cdata;
-    //    mq_notify(dagq_id, &sigev);
-    //    //perror("mq_notify");
-    //    pause();
-    //    printf("HERE after pause \n");
-    //    //dsm_halt(dagq_id);
+    sigev.sigev_notify = SIGEV_THREAD;
+    sigev.sigev_notify_function = mq_thread;
+    sigev.sigev_notify_attributes = NULL;
+    cdata.dagq_id = dagq_id;
+    cdata.dag = dag;
+    sigev.sigev_value.sival_ptr = &cdata;
+    mq_notify(dagq_id, &sigev);
+    //perror("mq_notify");
+    pause();
+    //dsm_halt(dagq_id);
     return 0;
 }

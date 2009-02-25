@@ -32,9 +32,13 @@ struct msg_info {
 /* DSM: DAG Scheduling Module */
 int dsm_add_task(mqd_t dagq_id, int pid);
 int dsm_remove_task(mqd_t dagq_id, int pid);
-int dsm_add_mpitask(mqd_t dagq_id, int rank);
 int dsm_add_connection(mqd_t dagq_id, int from_rank, int to_rank);
 int dsm_remove_connection(mqd_t dagq_id, int from_rank, int to_rank);
+
+int dsm_add_mpitask(mqd_t dagq_id, int rank);
+int dsm_remove_mpitask(mqd_t dagq_id, int rank);
+int dsm_add_mpi_connection(mqd_t dagq_id, int from_rank, int to_rank);
+int dsm_remove_mpi_connection(mqd_t dagq_id, int from_rank, int to_rank);
 int dsm_init(mqd_t *dagq_id);
 int dsm_halt(mqd_t dagq_id);
 #endif /* DAGSCHEDD_H_ */

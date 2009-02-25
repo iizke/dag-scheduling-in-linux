@@ -78,5 +78,8 @@ struct dag {
 //int dag_get_node(struct dag *d, int pid, struct node_info **n);
 int dag_init();
 int dag_clean();
-
+int dag_add_mpi_node(struct dag *d, int rank, int pid);
+int dag_remove_mpi_node(struct dag *d, int pid);
+int dag_add_mpi_edge(struct dag *d, int from_rank, int to_rank);
+int dag_remove_mpi_edge(struct dag *d, int fromrank, int torank);
 #endif /* DAG_H_ */

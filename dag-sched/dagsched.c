@@ -35,14 +35,26 @@ int dsm_remove_task(mqd_t dagq_id, int pid)
     return 0;
 }
 
+int dsm_remove_mpitask(mqd_t dagq_id, int rank)
+{
+    struct msg_info msginfo;
+    msginfo.cmd = CMD_REMOVE_MPI_TASK;
+    msginfo.pid1 = getpid();
+    msginfo.rank1 = rank;
+    mq_send(dagq_id, (char*)&msginfo, sizeof(struct msg_info), MSG_PRIO);
+    printf("Da gui request remove mpi task %d \n", msginfo.pid1);
+    return 0;
+}
+
 int dsm_add_mpitask(mqd_t dagq_id, int rank)
 {
     struct msg_info msginfo;
     int pid = getpid();
-    msginfo.cmd = CMD_ADD_TASK;
+    msginfo.cmd = CMD_ADD_MPI_TASK;
     msginfo.pid1 = pid;
     msginfo.rank1 = rank;
     mq_send(dagq_id, (char*)&msginfo, sizeof(struct msg_info), MSG_PRIO);
+    printf("Da gui request add mpi task %d \n", msginfo.pid1);
     return 0;
 }
 
@@ -83,6 +95,21 @@ int dsm_add_mpi_connection(mqd_t dagq_id, int from_rank, int to_rank)
     mq_send(dagq_id, (char*)&msginfo, sizeof(struct msg_info), MSG_PRIO);
     return 0;
 }
+
+int dsm_remove_mpi_connection(mqd_t dagq_id, int from_rank, int to_rank)
+{
+    struct msg_info msginfo;
+    msginfo.cmd = CMD_REMOVE_MPI_CONNECTION;
+    msginfo.pid1 = -1;
+    msginfo.rank1 = from_rank;
+    msginfo.pid2 = -1;
+    msginfo.rank2 = to_rank;
+    if (to_rank < 0)
+        msginfo.pid2 = getpid();
+    mq_send(dagq_id, (char*)&msginfo, sizeof(struct msg_info), MSG_PRIO);
+    return 0;
+}
+
 /**
  * TODO: dsm_init
  * Description: Init DAG Scheduling Module

@@ -27,19 +27,19 @@ int main(int argc, char **argv)
     printf("queue id = %d \n", qid);
     if (qid < 0)
         goto end;
-    dsm_add_task(qid, pid);
-    if (rank == 0){
-        sleep (5);
-        buf = malloc(sizeof(*buf) * 100);
-        MPI_Send(&buf, 100, MPI_INT, 1, 0, MPI_COMM_WORLD);
-    } else if (rank == 1) {
-        buf = malloc(sizeof(*buf) * 100);
-        MPI_Recv(&buf, 100, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
-        // add connection
-    }
-    sleep(5);
-    printf("DO UU TIEN CUA %d LA %d \n",pid, getpriority(PRIO_PROCESS, pid));
-    dsm_remove_task(qid, pid);
+    dsm_add_mpitask(qid, rank);
+//    if (rank == 0){
+//        sleep (5);
+//        buf = malloc(sizeof(*buf) * 100);
+//        MPI_Send(&buf, 100, MPI_INT, 1, 0, MPI_COMM_WORLD);
+//    } else if (rank == 1) {
+//        buf = malloc(sizeof(*buf) * 100);
+//        MPI_Recv(&buf, 100, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
+//        // add connection
+//    }
+    sleep(1);
+    printf("PRIO OF %d IS %d \n",pid, getpriority(PRIO_PROCESS, pid));
+    dsm_remove_mpitask(qid, rank);
 end:
     perror("BUG");
     dsm_halt(qid);

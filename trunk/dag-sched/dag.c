@@ -252,7 +252,7 @@ dag_nodelist_compare(const void *_n1, const void *_n2, void *avl_param)
  * Description: wrapper of _dag_add_node
  */
 int
-dag_add_node(struct dag *d, int pid, struct node_info **n)
+dag_add_mpi_node(struct dag *d, int pid, struct node_info **n)
 {
 //    struct node_info *node_info = malloc (sizeof (struct node_info));
 //    if (!node_info) {
@@ -270,12 +270,14 @@ dag_add_node(struct dag *d, int pid, struct node_info **n)
 //    printf("dag-add-node: add %d, dag co %d node \n",pid, d->node_list->avl_count);
 //    (*n) = node_info;
 
+	// TODO: Recheck
+	d->node_list.list[pid].pid = getpid();
 	if (d->node_list.list[pid].state == NODE_STATE_VALID) {
-		d->node_list[pid].nparents = 0;
-		d->node_list[pid].nchildren = 0;
 		(*n) = &(d->node_list.list[pid]);
 		return 0;
 	}
+	d->node_list[pid].nparents = 0;
+	d->node_list[pid].nchildren = 0;
 	d->node_list.list[pid].state = NODE_STATE_VALID;
 	d->node_list.size++;
 	(*n) = &(d->node_list.list[pid]);
@@ -287,7 +289,7 @@ dag_add_node(struct dag *d, int pid, struct node_info **n)
  * Description: wrapper of _dag_remove_node
  */
 int
-dag_remove_node(struct dag *d, int pid)
+dag_remove_mpi_node(struct dag *d, int pid)
 {
 //    struct node_info node_info;
 //    struct node_info *node = NULL;

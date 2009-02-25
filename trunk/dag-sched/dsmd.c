@@ -73,36 +73,44 @@ int process_msg(int dagq_id, struct dag *dag)
             mq_receive(dagq_id, (char*)&msginfo, sizeof(struct msg_info), NULL);
             switch (msginfo.cmd){
                 case CMD_ADD_TASK:
-                    dag_add_node(dag, msginfo.pid1, &node);
-                    do_dag_sched(node);
+                    //dag_add_node(dag, msginfo.pid1, &node);
+                    //do_dag_sched(node);
                     break;
                 case CMD_REMOVE_TASK:
-                    dag_remove_node(dag, msginfo.pid1);
+                    //dag_remove_node(dag, msginfo.pid1);
                     break;
                 case CMD_ADD_CONNECTION:
-                    dag_add_edge(dag, msginfo.pid1, msginfo.pid2, &edge);
-                    do_dag_sched(edge->child);
-                    do_dag_sched(edge->parent);
+                    //dag_add_edge(dag, msginfo.pid1, msginfo.pid2, &edge);
+                    //do_dag_sched(edge->child);
+                    //do_dag_sched(edge->parent);
                     break;
                 case CMD_REMOVE_CONNECTION:
-                    dag_remove_edge(dag, msginfo.pid1, msginfo.pid2);
-                    dag_get_node(dag, msginfo.pid1, &node);
-                    do_dag_sched(node);
-                    dag_get_node(dag, msginfo.pid2, &node);
-                    do_dag_sched(node);
+                    //dag_remove_edge(dag, msginfo.pid1, msginfo.pid2);
+                    //dag_get_node(dag, msginfo.pid1, &node);
+                    //do_dag_sched(node);
+                    //dag_get_node(dag, msginfo.pid2, &node);
+                    //do_dag_sched(node);
                     break;
                 case CMD_ADD_MPI_CONNECTION:
-		    dag_add_mpi_connection(dag, msginfo.rank1, msginfo.rank2);
-		    do_dag_sched(&d->node_list.list[msgino.rank1]);
+		    dag_add_mpi_edge(dag, msginfo.rank1, msginfo.rank2);
+		    do_dag_sched(&(d->node_list.list[msginfo.rank1]));
+		    do_dag_sched(&(d->node_list.list[msginfo.rank2]));
                     //dag_get_pid(dag, msginfo.pid1, msginfo.pid2, &edge);
                     //do_dag_sched(edge->child);
                     //do_dag_sched(edge->parent);
                     break;
                 case CMD_ADD_MPI_TASK:
+		    dag_add_mpi_node(dag, msginfo.rank1, &node);
+		    do_dag_sched(&(d->node_list.list[msginfo.rank1]));
                     break;
                 case CMD_REMOVE_MPI_CONNECTION:
+		    dag_remove_mpi_edge(dag, msginfo.rank1, msginfo.rank2);
+		    do_dag_sched(&(d->node_list.list[msginfo.rank1]));
+		    do_dag_sched(&(d->node_list.list[msginfo.rank2]));
                     break;
                 case CMD_REMOVE_MPI_TASK:
+		    dag_remove_mpi_node(dag, msginfo.rank1);
+		    // TODO: Should we reset all task's priority?
                     break;
                 default:
                     break;

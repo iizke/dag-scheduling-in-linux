@@ -30,7 +30,7 @@ struct node_info {
     int state;              /* valid or invalid */
 };
 #define MAX_NODES   40
-#define MAX_EDGES   (MAX_NODES * (MAX_NODES - 1) / 2)
+#define MAX_EDGES   800 // (MAX_NODES * (MAX_NODES - 1) / 2)
 struct node_list {
 	struct node_info list[MAX_NODES];
 	int size;

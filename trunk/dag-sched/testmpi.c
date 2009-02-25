@@ -32,11 +32,11 @@ int main(int argc, char **argv)
     if (rank == 0){
         sleep (5);
         MPI_Send(&buf, 100, MPI_INT, 1, 0, MPI_COMM_WORLD);
-        dsm_remove_mpi_connection(qid, 0, 1);
+        dsm_remove_mpi_connection(qid, 1, 0);
     } else if (rank == 1) {
         MPI_Recv(&buf, 100, MPI_INT, 0, 0, MPI_COMM_WORLD, &status);
         // add connection
-        dsm_add_mpi_connection(qid, 0, 1);
+        dsm_add_mpi_connection(qid, 1, 0);
     }
     sleep(1);
     printf("PRIO OF %d IS %d \n",pid, getpriority(PRIO_PROCESS, pid));
@@ -44,7 +44,6 @@ int main(int argc, char **argv)
 end:
     //perror("BUG");
     dsm_halt(qid);
-    dsm_init(&qid);
     MPI_Finalize();
     return 0;
 }

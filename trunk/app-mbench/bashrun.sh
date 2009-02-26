@@ -1,7 +1,7 @@
 #mkdir ./test_results/`uname -r`
 #test load : only cpubound
 batch=""
-./mbench-v0.4.sh $batch -d n4 -n 4 -l 4 -f ./scripts/script_load.txt -m 0 -M 0
+#./mbench-v0.4.sh $batch -d n4 -n 4 -l 4 -f ./scripts/script_load.txt -m 0 -M 0
 #./mbench-v0.4.sh $batch -d n5 -n 5 -l 4 -f ./scripts/script_load.txt -m 0 -M 0
 #./mbench-v0.3.sh $batch -d n6 -n 6 -l 6 -f ./scripts/script_load.txt -m 19 -M 19
 #./mbench-v0.3.sh $batch -d n7 -n 7 -l 6 -f ./scripts/script_load.txt -m 19 -M 19
@@ -19,9 +19,11 @@ batch=""
 
 # create dag randomly
 #mkdir tmp
-#./automateDag -n 10 -d 40 -o ./tmp/dag.txt
-#./dag2mbenchScript -f ./tmp/dag.txt -o ./tmp/mb.txt
-#./mbench-v0.4.sh $batch -n 10 -l 1 -f ./tmp/mb.txt -m 0 -M 0
-#../dag-sched/Debug/dagsched &
-#./mbenchdag-v0.4.sh $batch -n 10 -l 1 -f ./tmp/mb.txt -m 0 -M 0
-#killall dag-sched
+./automateDag -n 4 -d 40 -o ./tmp/dag.txt
+./dag2mbenchScript -f ./tmp/dag.txt -o ./tmp/mb.txt
+../dag-sched/Debug/dag-sched &
+sleep 1
+./mbench-v0.4.sh $batch -n 5 -l 2 -f ./tmp/mb.txt -m 19 -M 19
+sleep 4
+./mbenchdag-v0.4.sh $batch -n 5 -l 2 -f ./tmp/mb.txt -m 19 -M 19 
+killall dag-sched

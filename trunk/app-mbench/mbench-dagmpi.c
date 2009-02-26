@@ -225,9 +225,9 @@ int build_process(const struct action_script *script, int rank, int dagid)
             case ACT_RECV:
                 /* call malloc ? */
                 buf = malloc(sizeof(*buf) * arg1);
+                dsm_add_mpi_connection(dagid, arg2, rank);
                 err = MPI_Recv(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD,
                         &status);
-                dsm_add_mpi_connection(dagid, arg2, rank);
                 if (err != MPI_SUCCESS)
                     printf("p%d : Recv %d , %d : failed \n", rank, arg1, arg2);
                 else

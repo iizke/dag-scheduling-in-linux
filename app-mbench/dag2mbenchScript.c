@@ -180,7 +180,7 @@ int export2mbenchScript(struct task_list *list, char *output_name)
         return -1;
     task = list->list;
     for (i=0; i<list->size; i++) {
-        fprintf(f, "begin 1 \n");
+        fprintf(f, "begin 2 \n");
         idlist = task->children_list;
         while (idlist) {
             fprintf(f, "recv 1 %d \n", idlist->id);
@@ -190,7 +190,7 @@ int export2mbenchScript(struct task_list *list, char *output_name)
         // TODO: Ignore temporarily
         //if (task->children_list)
         //    fprintf(f, "wait \n");
-        fprintf(f, "genload 1 1\n");
+        fprintf(f, "genload 1 10\n");
         idlist = task->parent_list;
         while (idlist) {
             fprintf(f, "send 1 %d \n", idlist->id);

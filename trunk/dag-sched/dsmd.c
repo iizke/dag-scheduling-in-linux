@@ -42,11 +42,11 @@ do_dag_sched(struct node_info *node)
     //    sched_setparam(node->pid, &param);
     //    perror("sched_setparam");
 
-    p = 5 + MAX_NPARENTS * node->nchildren;
+    p = 19 + MAX_NPARENTS * node->nchildren;
     if ((2*node->nparents) >= MAX_NPARENTS)
         p -= (MAX_NPARENTS - 1);
     else
-        p -= (2*node->nparents);
+        p -= (20*node->nparents);
     if (p < MIN_PRIO) p = MIN_PRIO;
     if (p > MAX_PRIO) p = MAX_PRIO;
     //    printf("pid = %d, prio p = %d \n", node->pid, p);

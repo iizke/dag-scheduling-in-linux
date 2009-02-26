@@ -51,15 +51,16 @@ do_dag_sched(struct node_info *node)
 //    if (p < MIN_PRIO) p = MIN_PRIO;
 //    if (p > MAX_PRIO) p = MAX_PRIO;
 //    //    printf("pid = %d, prio p = %d \n", node->pid, p);
-    if (node->nchildren > 0)
-        p = 19;
-    else if (node->nparents == 0)
-        p = 19;
-    else
-        p = 0;
 
-    setpriority(PRIO_PROCESS, node->pid, p);
-    printf("do dag sched: node %d, p = %d, c= %d, prio = %d \n", node->pid, node->nparents, node->nchildren, p);
+//    if (node->nchildren > 0)
+//        p = 19;
+//    else if (node->nparents == 0)
+//        p = 19;
+//    else
+//        p = 0;
+//
+//    setpriority(PRIO_PROCESS, node->pid, p);
+//    printf("do dag sched: node %d, p = %d, c= %d, prio = %d \n", node->pid, node->nparents, node->nchildren, p);
     //perror("setpriority");
     return 0;
 }

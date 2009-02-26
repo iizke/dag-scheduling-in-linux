@@ -206,7 +206,7 @@ int build_process(const struct action_script *script, int rank, int dagid)
                 /* call malloc */
                 buf = malloc(sizeof(*buf) * arg1);
                 err = MPI_Send(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD);
-                dsm_remove_mpi_connection(dagid, arg2, rank);
+                //dsm_remove_mpi_connection(dagid, arg2, rank);
                 if (err != MPI_SUCCESS)
                     printf("p%d : Send %d , %d : failed \n", rank, arg1, arg2);
                 else
@@ -216,7 +216,7 @@ int build_process(const struct action_script *script, int rank, int dagid)
                 /* call malloc */
                 buf = malloc(sizeof(*buf) * arg1);
                 err = MPI_Send(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD);
-                dsm_remove_mpi_connection(dagid, arg2, rank);
+                //dsm_remove_mpi_connection(dagid, arg2, rank);
                 if (err != MPI_SUCCESS)
                     printf("p%d : SSend %d , %d : failed \n", rank, arg1, arg2);
                 else
@@ -228,6 +228,7 @@ int build_process(const struct action_script *script, int rank, int dagid)
                 dsm_add_mpi_connection(dagid, arg2, rank);
                 err = MPI_Recv(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD,
                         &status);
+                dsm_remove_mpi_connection(dagid, arg2, rank);
                 if (err != MPI_SUCCESS)
                     printf("p%d : Recv %d , %d : failed \n", rank, arg1, arg2);
                 else

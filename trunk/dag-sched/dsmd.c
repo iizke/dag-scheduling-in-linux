@@ -42,14 +42,22 @@ do_dag_sched(struct node_info *node)
     //    sched_setparam(node->pid, &param);
     //    perror("sched_setparam");
 
-    p = 19 + MAX_NPARENTS * node->nchildren;
-    if ((2*node->nparents) >= MAX_NPARENTS)
-        p -= (MAX_NPARENTS - 1);
+//
+//    p = 19 + MAX_NPARENTS * node->nchildren;
+//    if ((2*node->nparents) >= MAX_NPARENTS)
+//        p -= (MAX_NPARENTS - 1);
+//    else
+//        p -= (20*node->nparents);
+//    if (p < MIN_PRIO) p = MIN_PRIO;
+//    if (p > MAX_PRIO) p = MAX_PRIO;
+//    //    printf("pid = %d, prio p = %d \n", node->pid, p);
+    if (node->nchildren > 0)
+        p = 19;
+    else if (node->nparents == 0)
+        p = 19;
     else
-        p -= (20*node->nparents);
-    if (p < MIN_PRIO) p = MIN_PRIO;
-    if (p > MAX_PRIO) p = MAX_PRIO;
-    //    printf("pid = %d, prio p = %d \n", node->pid, p);
+        p = 0;
+
     setpriority(PRIO_PROCESS, node->pid, p);
     printf("do dag sched: node %d, p = %d, c= %d, prio = %d \n", node->pid, node->nparents, node->nchildren, p);
     //perror("setpriority");

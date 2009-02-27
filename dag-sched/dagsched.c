@@ -120,11 +120,11 @@ int dsm_init(mqd_t *dagq_id)
     if (!dagq_id)
         return -1;
     attr.mq_curmsgs = 0;
-    attr.mq_flags = 0;
+    attr.mq_flags = O_NONBLOCK;
     attr.mq_maxmsg = MAX_DAGQ_SIZE;
     attr.mq_msgsize = sizeof(struct msg_info);
     //mq_unlink(DAG_MSQ_NAME);
-    (*dagq_id) = mq_open(DAG_MSQ_NAME, O_RDWR | O_CREAT,
+    (*dagq_id) = mq_open(DAG_MSQ_NAME, O_RDWR | O_CREAT | O_NONBLOCK ,
                     S_IRWXU | S_IRWXG, &attr);
     //dag_init(&dag);
     return 0;

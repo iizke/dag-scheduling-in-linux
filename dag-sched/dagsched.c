@@ -42,7 +42,7 @@ int dsm_remove_mpitask(mqd_t dagq_id, int rank)
     msginfo.pid1 = getpid();
     msginfo.rank1 = rank;
     mq_send(dagq_id, (char*)&msginfo, sizeof(struct msg_info), MSG_PRIO);
-    printf("Da gui request remove mpi task %d \n", msginfo.pid1);
+    //printf("Da gui request remove mpi task %d \n", msginfo.pid1);
     return 0;
 }
 
@@ -54,7 +54,7 @@ int dsm_add_mpitask(mqd_t dagq_id, int rank)
     msginfo.pid1 = pid;
     msginfo.rank1 = rank;
     mq_send(dagq_id, (char*)&msginfo, sizeof(struct msg_info), MSG_PRIO);
-    printf("Da gui request add mpi task %d \n", msginfo.pid1);
+    //printf("Da gui request add mpi task %d \n", msginfo.pid1);
     return 0;
 }
 

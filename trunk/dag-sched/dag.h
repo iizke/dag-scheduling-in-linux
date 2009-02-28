@@ -28,7 +28,9 @@ struct node_info {
     //struct edge *children_edge_list;
     int nchildren;          /* # of nodes on which are depended by this node */
     int state;              /* valid or invalid */
+    int old_prio;           /* prio value before adjustment */
 };
+
 #define MAX_NODES   40
 #define MAX_EDGES   800 // (MAX_NODES * (MAX_NODES - 1) / 2)
 struct node_list {

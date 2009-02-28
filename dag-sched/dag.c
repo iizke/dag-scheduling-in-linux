@@ -477,6 +477,7 @@ int node_init(struct node_info *n)
     n->pid = -1;
     n->rank = -1;
     n->state = NODE_STATE_INVALID;
+    n->old_prio = -1;
     return 0;
 }
 

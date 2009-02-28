@@ -19,16 +19,20 @@
 #include "dag.h"
 #include "avl.h"
 
-#define MAX_NPARENTS    5
-#define MAX_PRIO        19
-#define MIN_PRIO        0
+#define MAX_NPARENTS            5
+#define MAX_PRIO                19
+#define MIN_PRIO                0
+#define DSM_ADD_CONNECTION      0
+#define DSM_REMOVE_CONNECTION   1
+#define DSM_DO_NOTHING          2
+
 
 /**
  * TODO: do_dag_sched
  * Description: set priority and sched policy to task
  */
 int
-do_dag_sched(struct node_info *node)
+do_dag_sched(struct node_info *node, int flag)
 {
     //    struct sched_param param;
     int p;
@@ -53,12 +57,24 @@ do_dag_sched(struct node_info *node)
 //    //    printf("pid = %d, prio p = %d \n", node->pid, p);
 
     p = getpriority(PRIO_PROCESS, node->pid);
-    if (node->nchildren > 0)
-        p += 0;
-    else if (node->nparents == 0)
-        p += 5;
-    else
-        p -= 5;
+//    if (node->nchildren > 0)
+//        p += 0;
+//    else if (node->nparents == 0)
+//        p += 5;
+//    else
+//        p -= 5;
+
+    if (flag == DSM_ADD_CONNECTION) {
+        if (node->nchildren > 0)
+            p += 0;
+        else
+            p -= 5;
+    } else if (flag == DSM_REMOVE_CONNECTION) {
+        if (node->nchildren > 0)
+            p += 0;
+        else
+            p += 5;
+    }
 
     setpriority(PRIO_PROCESS, node->pid, p);
 //    printf("do dag sched: node %d, p = %d, c= %d, prio = %d \n", node->pid, node->nparents, node->nchildren, p);
@@ -103,20 +119,20 @@ process_msg(int dagq_id, struct dag *dag)
                     break;
                 case CMD_ADD_MPI_CONNECTION:
                     dag_add_mpi_edge(dag, msginfo.rank1, msginfo.rank2);
-                    do_dag_sched(&(dag->node_list.list[msginfo.rank1]));
-                    do_dag_sched(&(dag->node_list.list[msginfo.rank2]));
+                    do_dag_sched(&(dag->node_list.list[msginfo.rank1]), DSM_ADD_CONNECTION);
+                    do_dag_sched(&(dag->node_list.list[msginfo.rank2]), DSM_ADD_CONNECTION);
                     //dag_get_pid(dag, msginfo.pid1, msginfo.pid2, &edge);
                     //do_dag_sched(edge->child);
                     //do_dag_sched(edge->parent);
                     break;
                 case CMD_ADD_MPI_TASK:
                     dag_add_mpi_node(dag, msginfo.rank1, msginfo.pid1);
-                    do_dag_sched(&(dag->node_list.list[msginfo.rank1]));
+                    //do_dag_sched(&(dag->node_list.list[msginfo.rank1]));
                     break;
                 case CMD_REMOVE_MPI_CONNECTION:
                     dag_remove_mpi_edge(dag, msginfo.rank1, msginfo.rank2);
-                    do_dag_sched(&(dag->node_list.list[msginfo.rank1]));
-                    do_dag_sched(&(dag->node_list.list[msginfo.rank2]));
+                    do_dag_sched(&(dag->node_list.list[msginfo.rank1]), DSM_REMOVE_CONNECTION);
+                    do_dag_sched(&(dag->node_list.list[msginfo.rank2]), DSM_REMOVE_CONNECTION);
                     break;
                 case CMD_REMOVE_MPI_TASK:
                     dag_remove_mpi_node(dag, msginfo.rank1);

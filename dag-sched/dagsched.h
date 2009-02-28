@@ -21,6 +21,7 @@
 #define CMD_REMOVE_MPI_TASK         6
 #define CMD_REMOVE_MPI_CONNECTION   7
 
+
 struct msg_info {
     int cmd;
     int pid1;

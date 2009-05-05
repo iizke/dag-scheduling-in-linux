@@ -10,7 +10,7 @@ trap 'echo "ABORTING";exit' 1 2 15
 # in version 0.1: statistic values are determined in mpirun, only elapsed-time is valuable (single value)
 # in version 0.2: statistic values are determined in each processes created by mpirun, that's more accuracy (multi-value)
 # in version 0.3: add more statistic values: true elapsed time and expected elapsed time + using tool schedtool
-VERSION=0.2
+VERSION=0.4
 USERNAME=roseman
 num_runs=2			# number of processes mbech-mpi
 script_file=script.txt		# file containing action script of all processes
@@ -166,7 +166,7 @@ else
 	echo NORMAL Scheduling >>$summary_logfile
 fi
 
-echo "nice	Elapsed time	nice	Expected elapsed-time	nice	Sum Elapsed time	nice	User time	nice 	System time	nice	%CPU	nice	Context switch	nice	Sleeps" >> $summary_logfile
+echo "nice	Elapsed	BestET	Sum-ET	User	System	%CPU	Ctx-switch	Sleeps" >> $summary_logfile
 
 add_data_point()
 {
@@ -204,36 +204,36 @@ show_statistics()
 
 do_log()
 {
-	echo "Average Run (std deviation):" > templog
+	echo "Average-Run-(std- deviation):" > templog
 	show_statistics $temp_true_elapsed
 	true_elavg=$avg
-	echo Elapsed Time "$avg ($sdev)" >> templog
+	echo Elapsed-Time "$avg $sdev" >> templog
 	show_statistics $temp_expected_elapsed
 	expected_elavg=$avg
-	echo Expected Elapsed-Time "$avg ($sdev)" >> templog
+	echo Expected-Elapsed-Time "$avg $sdev" >> templog
 	show_statistics $temp_sum_elapsed
 	sum_elavg=$avg
-	echo Sum Elapsed Times "$avg ($sdev)" >> templog
+	echo Sum-Elapsed-Times "$avg $sdev" >> templog
 	show_statistics $temp_user
 	utavg=$avg
-	echo User Time "$avg ($sdev)" >> templog
+	echo User-Time "$avg $sdev" >> templog
 	show_statistics $temp_sys
 	stavg=$avg
-	echo System Time "$avg ($sdev)" >> templog
+	echo System-Time "$avg $sdev" >> templog
 	show_statistics $temp_percent
 	pcavg=$avg
-	echo Percent CPU "$avg ($sdev)" >> templog
+	echo Percent-CPU "$avg $sdev" >> templog
 	show_statistics $temp_ctx
 	csavg=$avg
-	echo Context Switches "$avg ($sdev)" >> templog
+	echo Context-Switches "$avg $sdev" >> templog
 	show_statistics $temp_sleeps
 	slavg=$avg
-	echo Sleeps "$avg ($sdev)" >> templog
+	echo Sleeps "$avg $sdev" >> templog
 	echo >> templog
 	cat templog
 	cat templog >> $logfile
 	if (($i == $nloops)); then
-		echo "$j	$true_elavg	$j	$expected_elavg	$j	$sum_elavg	$j	$utavg	$j	$stavg	$j	$pcavg	$j	$csavg	$j	$slavg " >> $summary_logfile
+		echo "$j	$true_elavg	$expected_elavg	$sum_elavg	$utavg	$stavg	$pcavg	$csavg	$slavg " >> $summary_logfile
 	fi
 }
 
@@ -286,7 +286,7 @@ do_runs()
 		for (( i=1 ; i <= nloops ; i++ ))
 		do
 			echo $i-th loop of _nice_ $j...
-			sleep 12
+			sleep 4
 			mpirun -np $num_runs $time -a -f "%e %U %S %P %c %w" -o timelog schedtool -v $batch -n $j -e ./mbench-mpi -n $num_runs -f $script_file
 #			mpirun -np $num_runs $time -a -f "%e %U %S %P %c %w" -o timelog schedtool -v -F -p 1 -e ./mbench-mpi -n $num_runs -f $script_file
 #			mpirun -np $num_runs $time -a -f "%e %U %S %P %c %w" -o timelog ./mbench-mpi $batch -n $num_runs -f $script_file -p $j

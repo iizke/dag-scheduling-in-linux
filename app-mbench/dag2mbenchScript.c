@@ -180,7 +180,7 @@ int export2mbenchScript(struct task_list *list, char *output_name)
         return -1;
     task = list->list;
     for (i=0; i<list->size; i++) {
-        fprintf(f, "begin 2 \n");
+        fprintf(f, "begin 1 \n");
         idlist = task->children_list;
         while (idlist) {
             fprintf(f, "recv 1 %d \n", idlist->id);

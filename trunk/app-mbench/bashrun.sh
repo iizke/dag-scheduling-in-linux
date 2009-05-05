@@ -19,11 +19,52 @@ batch=""
 
 # create dag randomly
 #mkdir tmp
-./automateDag -n 4 -d 40 -o ./tmp/dag.txt
-./dag2mbenchScript -f ./tmp/dag.txt -o ./tmp/mb.txt
-../dag-sched/Debug/dag-sched &
-sleep 1
-./mbench-v0.4.sh $batch -n 5 -l 2 -f ./tmp/mb.txt -m 19 -M 19
+thisdate=`date +%Y%m%d_%H%M%S`
+nnodes=9
+loop=10
+nice=19
+density=20
+./automateDag -n $nnodes -d $density -o ./tmp/dag$thisdate.txt
+./dag2mbenchScript -f ./tmp/dag$thisdate.txt -o ./tmp/mb$thisdate.txt
+../dag-sched/Release/dag-sched &
+sleep 2
+./mbench-v0.4.sh $batch -n $nnodes -l $loop -f ./tmp/mb$thisdate.txt -m $nice -M $nice
 sleep 4
-./mbenchdag-v0.4.sh $batch -n 5 -l 2 -f ./tmp/mb.txt -m 19 -M 19 
+./mbenchdag-v0.4.sh $batch -n $nnodes -l $loop -f ./tmp/mb$thisdate.txt -m $nice -M $nice 
+killall dag-sched
+
+sleep 2
+
+thisdate=`date +%Y%m%d_%H%M%S`
+./automateDag -n $nnodes -d $density -o ./tmp/dag$thisdate.txt
+./dag2mbenchScript -f ./tmp/dag$thisdate.txt -o ./tmp/mb$thisdate.txt
+../dag-sched/Release/dag-sched &
+sleep 2
+./mbench-v0.4.sh $batch -n $nnodes -l $loop -f ./tmp/mb$thisdate.txt -m $nice -M $nice
+sleep 4
+./mbenchdag-v0.4.sh $batch -n $nnodes -l $loop -f ./tmp/mb$thisdate.txt -m $nice -M $nice
+killall dag-sched
+
+sleep 2
+
+thisdate=`date +%Y%m%d_%H%M%S`
+./automateDag -n $nnodes -d $density -o ./tmp/dag$thisdate.txt
+./dag2mbenchScript -f ./tmp/dag$thisdate.txt -o ./tmp/mb$thisdate.txt
+../dag-sched/Release/dag-sched &
+sleep 2
+./mbench-v0.4.sh $batch -n $nnodes -l $loop -f ./tmp/mb$thisdate.txt -m $nice -M $nice
+sleep 4
+./mbenchdag-v0.4.sh $batch -n $nnodes -l $loop -f ./tmp/mb$thisdate.txt -m $nice -M $nice
+killall dag-sched
+
+sleep 2
+
+thisdate=`date +%Y%m%d_%H%M%S`
+./automateDag -n $nnodes -d $density -o ./tmp/dag$thisdate.txt
+./dag2mbenchScript -f ./tmp/dag$thisdate.txt -o ./tmp/mb$thisdate.txt
+../dag-sched/Release/dag-sched &
+sleep 2
+./mbench-v0.4.sh $batch -n $nnodes -l $loop -f ./tmp/mb$thisdate.txt -m $nice -M $nice
+sleep 4
+./mbenchdag-v0.4.sh $batch -n $nnodes -l $loop -f ./tmp/mb$thisdate.txt -m $nice -M $nice
 killall dag-sched

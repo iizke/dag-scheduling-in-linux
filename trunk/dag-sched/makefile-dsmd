@@ -1,0 +1,12 @@
+CC=gcc
+CFLAGS=-lrt -O2 -Wall
+
+all: dag-sched
+dag-sched: dsmd.o dag.o dagsched.o
+	${CC} ${CFLAGS} -o dag-sched dsmd.o dag.o dagsched.o
+dsmd.o: dsmd.c
+dag.o: dag.c
+dagsched.o: dagsched.c
+
+clean:
+	rm -f dag-sched *.o *~

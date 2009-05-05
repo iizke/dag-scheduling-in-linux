@@ -68,12 +68,12 @@ do_dag_sched(struct node_info *node, int flag)
         if (node->nchildren > 0)
             p += 0;
         else
-            p -= 5;
+            p -= 7;
     } else if (flag == DSM_REMOVE_CONNECTION) {
         if (node->nchildren > 0)
             p += 0;
         else
-            p += 5;
+            p += 7;
     }
 
     setpriority(PRIO_PROCESS, node->pid, p);

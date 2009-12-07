@@ -63,7 +63,7 @@ int phase_sched_remove_connection(int src_pid, int dest_pid, int weight)
     return SUCCESS;
 }
 
-int phase_sched_reset() 
+int phase_sched_reset(void)
 {
     int flag;
     
@@ -78,7 +78,7 @@ int phase_sched_reset()
     return SUCCESS;
 }
 
-int __init usb_rtusb_init(void)
+int __init phase_sched_mod_init(void)
 {
     return SUCCESS;
 }

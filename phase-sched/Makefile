@@ -1,19 +1,20 @@
 ## ONLY USE FOR LINUX KERNEL VERSION 2.6
+MODULE_NAME := phase_sched
+BUILD_DIR := build
 
 all: module
-MODULE_NAME := phase_sched
 
 ifeq ($(PATCHLEVEL),)
  PATCHLEVEL := $(shell uname -r | cut -d. -f2)
 endif
 
 ifeq ($(PATCHLEVEL),4)
- echo "ONLY USE FOR LINUX KERNEL VERSION 2.6"
+ echo "ONLY USE FOR LINUX KERNEL VERSION 2.6.18 OR HIGHER"
  exit 1
 endif
 
 RESMAN_CORE_OBJS := phase_sched_mod.o phase_task.o phase_cpu.o dag.o
-$(MODULE_NAME)-objs := $(RESMAN_CORE_OBJS) 
+$(MODULE_NAME)-objs := $(RESMAN_CORE_OBJS)
 
 ifdef TOPDIR
 obj-m += $(MODULE_NAME).o
@@ -36,7 +37,7 @@ endif
 ifdef KERNOUT
 	KERNEL_OUTPUT := KBUILD_OUTPUT=$(KERNOUT)
 else
-	KERNEL_OUTPUT :=
+	KERNEL_OUTPUT := 
 endif
 
 src ?= .
@@ -55,10 +56,12 @@ module:
 	fi
 
 clean:
+	@rm -rf $(BUILD_DIR)
 	@rm -f $(RESMAN_CORE_OBJS) .*.{cmd,flags}
 	@rm -f $(MODULE_NAME).{o,ko,mod.{o,c}} built-in.o $(VERSION_HEADER) *~
-	@rm *.o
+	@rm -f *.o
 	@rm -fr .tmp_versions
+	@rm -fr Module.markers Module.symvers
 
 modules_install:
 	echo "2.6 module install"

@@ -5,10 +5,9 @@
 #include <linux/version.h>
 #include <linux/kernel.h>
 #include <linux/init.h>
+#include "phase_def.h"
 
-#define SUCCESS                 1
-#define FAIL                    0
-
+// command codes
 #define PHASE_SCHED_ADD_CONN    0
 #define PHASE_SCHED_DEL_CONN    1
 

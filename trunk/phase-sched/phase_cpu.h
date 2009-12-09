@@ -1,7 +1,8 @@
 #ifndef PHASE_CPU_H
 #define PHASE_CPU_H
 
-#include "phase_sched_mod.h"
+#include "phase_def.h"
+
 /** MAX_LOADS: maximum of loads that a processor can hold */
 #define MAX_LOADS               50
 

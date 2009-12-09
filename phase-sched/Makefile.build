@@ -2,7 +2,7 @@
 MODULE_NAME := phase_sched
 BUILD_DIR := build
 SOURCE_FILES := *.c *.h
-MAKEFILE := Makefile.build
+all: module
 
 ifeq ($(PATCHLEVEL),)
  PATCHLEVEL := $(shell uname -r | cut -d. -f2)
@@ -35,9 +35,9 @@ else
 endif
 
 ifdef KERNOUT
-        KERNEL_OUTPUT := KBUILD_OUTPUT=$(KERNOUT)
+	KERNEL_OUTPUT := KBUILD_OUTPUT=$(KERNOUT)
 else
-        KERNEL_OUTPUT :=
+	KERNEL_OUTPUT := 
 endif
 
 src ?= .
@@ -46,14 +46,15 @@ obj ?= .
 MODULE_OBJECT := $(MODULE_NAME).ko
 MODULE_CONF := /etc/modprobe.conf
 
-#KBUILD_PARAMS := -C $(KERNEL_SOURCES) SUBDIRS=$(PWD)/$(BUILD_DIR) $(KERNEL_OUTPUT)
+KBUILD_PARAMS := -C $(KERNEL_SOURCES) SUBDIRS=$(PWD)/$(BUILD_DIR) $(KERNEL_OUTPUT)
 
+module:
+	@$(MAKE) $(KBUILD_PARAMS) modules
 
-all: 
-	@mkdir -p $(BUILD_DIR)
-	@cp -f $(SOURCE_FILES) $(BUILD_DIR)
-	@cp -f $(MAKEFILE) $(BUILD_DIR)/Makefile
-	@$(MAKE) -C $(BUILD_DIR)
+#	if ! [ -f $(BUILD_DIR)/$(MODULE_OBJECT) ]; then \
+	echo "$(MODULE_OBJECT) failed to build!"; \
+	exit 1; \
+	fi
 
 clean:
 	@rm -rf $(BUILD_DIR)
@@ -63,3 +64,7 @@ clean:
 	@rm -fr .tmp_versions
 	@rm -fr Module.markers Module.symvers
 
+modules_install:
+	echo "2.6 module install"
+	make $(KBUILD_PARAMS) modules_install
+	/sbin/depmod -a

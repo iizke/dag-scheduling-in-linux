@@ -8,7 +8,7 @@ BUILD_DIR := build
 #BUILD_SRCFILES:= $(C_FILES) $(H_FILES)
 
 MAKEFILE := Makefile.build
-SRCFILES=$(shell ls *.h *c )
+SRCFILES=$(shell ls *.h *.c )
 BUILD_SRCFILES=$(foreach fi, $(SRCFILES), $(shell echo $(BUILD_DIR)/$(fi)))
 
 all: $(BUILD_SRCFILES)

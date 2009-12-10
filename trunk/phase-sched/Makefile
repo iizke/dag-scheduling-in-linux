@@ -4,62 +4,20 @@ BUILD_DIR := build
 SOURCE_FILES := *.c *.h
 MAKEFILE := Makefile.build
 
-ifeq ($(PATCHLEVEL),)
- PATCHLEVEL := $(shell uname -r | cut -d. -f2)
-endif
-
-ifeq ($(PATCHLEVEL),4)
- echo "ONLY USE FOR LINUX KERNEL VERSION 2.6.18 OR HIGHER"
- exit 1
-endif
-
-RESMAN_CORE_OBJS := phase_sched_mod.o phase_task.o phase_cpu.o dag.o
-$(MODULE_NAME)-objs := $(RESMAN_CORE_OBJS)
-
-ifdef TOPDIR
-obj-m += $(MODULE_NAME).o
-endif
-
-EXTRA_CFLAGS += -I$(src)
-
-ifdef KERNDIR
- KERNEL_SOURCES := $(KERNDIR)
-else
- KERNEL_SOURCES := /lib/modules/$(shell uname -r)/build
-endif
-
-ifdef MODDIR
- MODULE_ROOT := $(MODDIR)
-else
- MODULE_ROOT := /lib/modules/$(shell uname -r)/extra
-endif
-
-ifdef KERNOUT
-        KERNEL_OUTPUT := KBUILD_OUTPUT=$(KERNOUT)
-else
-        KERNEL_OUTPUT :=
-endif
-
-src ?= .
-obj ?= .
-
-MODULE_OBJECT := $(MODULE_NAME).ko
-MODULE_CONF := /etc/modprobe.conf
-
-#KBUILD_PARAMS := -C $(KERNEL_SOURCES) SUBDIRS=$(PWD)/$(BUILD_DIR) $(KERNEL_OUTPUT)
-
-
-all: 
-	@mkdir -p $(BUILD_DIR)
-	@cp -f $(SOURCE_FILES) $(BUILD_DIR)
+#all: $(BUILD_DIR)/*.c $(BUILD_DIR)/*.h
+all:
+	@mkdir -p $(BUILD_DIR); cp -f *.h *.c $(BUILD_DIR) 
 	@cp -f $(MAKEFILE) $(BUILD_DIR)/Makefile
-	@$(MAKE) -C $(BUILD_DIR)
+	@$(MAKE) -C $(BUILD_DIR) SRCPATH=$(PWD)
 
 clean:
 	@rm -rf $(BUILD_DIR)
-	@rm -f $(RESMAN_CORE_OBJS) .*.{cmd,flags}
-	@rm -f $(MODULE_NAME).{o,ko,mod.{o,c}} built-in.o $(VERSION_HEADER) *~
-	@rm -f *.o
-	@rm -fr .tmp_versions
-	@rm -fr Module.markers Module.symvers
+	@rm -f Module.markers Module.symvers
 
+$(BUILD_DIR)/%.c: %.c
+	@mkdir -p $(BUILD_DIR)
+	cp $< $(BUILD_DIR)
+
+$(BUILD_DIR)/%.h: %.h
+	@mkdir -p $(BUILD_DIR)
+	cp $< $(BUILD_DIR)

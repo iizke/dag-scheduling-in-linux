@@ -1,5 +1,5 @@
 #include "phase_sched_mod.h"
-
+ 
 int cpuload_list_reset(struct cpuload_list *list)
 {
     return SUCCESS;

@@ -1,8 +1,9 @@
 ## ONLY USE FOR LINUX KERNEL VERSION 2.6
+all: module
+
 MODULE_NAME := phase_sched
 BUILD_DIR := build
 SOURCE_FILES := *.c *.h
-all: module
 
 ifeq ($(PATCHLEVEL),)
  PATCHLEVEL := $(shell uname -r | cut -d. -f2)
@@ -46,15 +47,16 @@ obj ?= .
 MODULE_OBJECT := $(MODULE_NAME).ko
 MODULE_CONF := /etc/modprobe.conf
 
-KBUILD_PARAMS := -C $(KERNEL_SOURCES) SUBDIRS=$(PWD)/$(BUILD_DIR) $(KERNEL_OUTPUT)
+ifdef SRCPATH
+ SUBDIRS := $(SRCPATH)/$(BUILD_DIR)
+else
+ SUBDIRS := $(PWD)
+endif
+
+KBUILD_PARAMS := -C $(KERNEL_SOURCES) SUBDIRS=$(SUBDIRS) $(KERNEL_OUTPUT)
 
 module:
 	@$(MAKE) $(KBUILD_PARAMS) modules
-
-#	if ! [ -f $(BUILD_DIR)/$(MODULE_OBJECT) ]; then \
-	echo "$(MODULE_OBJECT) failed to build!"; \
-	exit 1; \
-	fi
 
 clean:
 	@rm -rf $(BUILD_DIR)

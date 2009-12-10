@@ -9,7 +9,7 @@ MAKEFILE := Makefile.build
 
 all: $(BUILD_SRCFILES)
 	@cp -f $(MAKEFILE) $(BUILD_DIR)/Makefile
-	@$(MAKE) -C $(BUILD_DIR) SRCPATH=$(PWD)
+	@$(MAKE) -C $(BUILD_DIR) SRCPATH=$(PWD)/$(BUILD_DIR)
 
 clean:
 	@rm -rf $(BUILD_DIR)

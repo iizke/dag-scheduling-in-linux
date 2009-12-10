@@ -2,8 +2,6 @@
 all: module
 
 MODULE_NAME := phase_sched
-BUILD_DIR := build
-SOURCE_FILES := *.c *.h
 
 ifeq ($(PATCHLEVEL),)
  PATCHLEVEL := $(shell uname -r | cut -d. -f2)
@@ -48,7 +46,7 @@ MODULE_OBJECT := $(MODULE_NAME).ko
 MODULE_CONF := /etc/modprobe.conf
 
 ifdef SRCPATH
- SUBDIRS := $(SRCPATH)/$(BUILD_DIR)
+ SUBDIRS := $(SRCPATH)
 else
  SUBDIRS := $(PWD)
 endif
@@ -59,7 +57,6 @@ module:
 	@$(MAKE) $(KBUILD_PARAMS) modules
 
 clean:
-	@rm -rf $(BUILD_DIR)
 	@rm -f $(RESMAN_CORE_OBJS) .*.{cmd,flags}
 	@rm -f $(MODULE_NAME).{o,ko,mod.{o,c}} built-in.o $(VERSION_HEADER) *~
 	@rm -f *.o

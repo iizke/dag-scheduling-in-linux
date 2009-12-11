@@ -23,7 +23,7 @@
 <tool id="cdt.managedbuild.tool.gnu.archiver.base.1352211753" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 <tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.33486827" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base"/>
 <tool id="cdt.managedbuild.tool.gnu.c.compiler.base.2012725258" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-<option id="gnu.c.compiler.option.include.paths.918507141" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+<option id="gnu.c.compiler.option.include.paths.918507141" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 <listOptionValue builtIn="false" value="/usr/src/kernels/2.6.18-128.el5-i686/include"/>
 </option>
 <inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.181669765" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>

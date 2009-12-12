@@ -16,8 +16,16 @@ struct phase_sysfs {
     struct sysfs_ops phase_ops;
     struct attribute phase_attrs[2];
     struct kobj_type phase_ktype;
-    struct phase_attr req;
+    struct phase_req req;
 
+};
+
+struct phase_req {
+    struct phase_attr pattr;
+    int cmd;
+    int src_pid;
+    int dest_pid;
+    int weight;
 };
 
 struct phase_attr {

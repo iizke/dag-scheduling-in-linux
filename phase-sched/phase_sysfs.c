@@ -6,7 +6,7 @@
  */
 
 /***************************************************************************
- * AODV ROUTING - INTERGRATED IN RT2570
+ * PHASE SCHEDULING MODULE
  *
  * File: phase_sysfs.c
  *
@@ -22,6 +22,8 @@
  ***************************************************************************/
 #include "phase_sysfs.h"
 #include "phase_def.h"
+#include "phase_sched.h"
+
 static ssize_t
 phase_sched_show(struct kobject *kobj, struct attribute *attr, char *buffer)
 {
@@ -56,7 +58,7 @@ phase_sched_store(struct kobject *kobj, struct attribute *attr,
     phase_sysfs = container_of(subsystem, struct phase_sysfs, subsystem);
     _attr = container_of(attr, struct phase_attr, attr);
 
-    return _attr->store((void*) 0, buffer, size);
+    return _attr->store((void*) phase_sysfs, buffer, size);
 }
 
 static void
@@ -68,7 +70,12 @@ phase_sched_release(struct kobject *kobj)
 ssize_t phase_sched_show_req (void* obj, char *buf)
 {
     struct phase_sysfs *ps = obj;
-    return 0;
+    int ret = sprintf(buf, "%d %d %d %d", 
+                    ps->req.cmd, 
+                    ps->req.src_pid,
+                    ps->req.dest_pid,
+                    ps->req.weight);
+    return ret;
 }
 
 ssize_t phase_sched_store_req (void* obj, const char *buf, size_t size)
@@ -80,7 +87,15 @@ ssize_t phase_sched_store_req (void* obj, const char *buf, size_t size)
         printk("Input type is not expected, storing request is end \n");
         return 0;
     }
-
+    
+    if (!ps)
+        return 0;
+    
+    ps->req.cmd = req.cmd;
+    ps->req.src_pid = req.src_pid;
+    ps->req.dest_pid = req.dest_pid;
+    ps->req.weight = req.weight;
+    
     return size;
 }
 
@@ -90,12 +105,12 @@ int phase_sysfs_init(struct phase_sysfs *ps)
         return FAIL;
     ps->phase_ops.show = phase_sched_show;
     ps->phase_ops.store = phase_sched_store;
-    ps->req.pattr.attr.name = __stringify(req);
-    ps->req.pattr.attr.mode = 0666;
-    ps->req.pattr.attr.owner = THIS_MODULE;
-    ps->req.pattr.show = phase_sched_show_req;
-    ps->req.pattr.store = phase_sched_store_req;
-    ps->phase_attrs[0] = &ps->req.pattr.attr;
+    ps->req_attr.attr.name = __stringify(req);
+    ps->req_attr.attr.mode = 0666;
+    ps->req_attr.attr.owner = THIS_MODULE;
+    ps->req_attr.show = phase_sched_show_req;
+    ps->req_attr.store = phase_sched_store_req;
+    ps->phase_attrs[0] = &ps->req_attr.attr;
     ps->phase_attrs[1] = NULL;
     ps->phase_ktype.release = phase_sched_release;
     ps->phase_ktype.sysfs_ops = &ps->phase_ops;

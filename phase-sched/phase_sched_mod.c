@@ -1,4 +1,5 @@
-#include "phase_sched_mod.h"
+#include "phase_sched.h"
+#include "phase_sysfs.h"
  
 int cpuload_list_reset(struct cpuload_list *list)
 {
@@ -10,53 +11,28 @@ int dag_reset(struct dag *dag)
     return SUCCESS;
 }
 
-int rebuild_dag(struct req_msg *msg) 
+static int rebuild_dag(struct phase_req *req) 
 {
-    if (!msg)
+    if (!req)
         return FAIL;
     
     return SUCCESS;
 }
 
-int phase_sched_schedule(struct req_msg *msg)
+static int phase_sched_schedule(struct phase_req *req)
 {
     return SUCCESS;
 }
 
-int phase_sched_add_connection(int src_pid, int dest_pid, int weight)
+int phase_sched_do_req(struct phase_req *req)
 {
     int flag;
-    struct req_msg msg;
-    
-    msg.cmd = PHASE_SCHED_ADD_CONN;
-    msg.src_pid = src_pid;
-    msg.dest_pid = dest_pid;
-    msg.weight = weight;
-    flag = rebuild_dag(&msg);
-    if (flag != SUCCESS)
-        return flag;
-    
-    flag = phase_sched_schedule(&msg);
-    if (flag != SUCCESS)
-        return flag;
 
-    return SUCCESS;
-}
-
-int phase_sched_remove_connection(int src_pid, int dest_pid, int weight)
-{
-    int flag;
-    struct req_msg msg;
-    
-    msg.cmd = PHASE_SCHED_DEL_CONN;
-    msg.src_pid = src_pid;
-    msg.dest_pid = dest_pid;
-    msg.weight = weight;
-    flag = rebuild_dag(&msg);
+    flag = rebuild_dag(&req);
     if (flag != SUCCESS)
         return flag;
     
-    flag = phase_sched_schedule(&msg);
+    flag = phase_sched_schedule(&req);
     if (flag != SUCCESS)
         return flag;
 
@@ -78,13 +54,39 @@ int phase_sched_reset(void)
     return SUCCESS;
 }
 
+static int phase_sched_init(struct phase_sched *ps)
+{
+    if (!ps)
+        return FAIL;
+    
+    build_phase_sysfs_tree(ps);
+    phase_dag_init(&ps->dag);
+    phase_req_init(&ps->req);
+    cpuload_list_init(&ps->cpuload_list);
+    
+    return SUCCESS;
+}
+
+static int phase_sched_exit(struct phase_sched *ps)
+{
+    if (!ps)
+        return FAIL;
+        
+    free_phase_sysfs_tree(ps);
+    phase_dag_free(&ps->dag);
+    cpuload_list_free(&ps->cpuload_list);
+    return SUCCESS;
+}
+
 int __init phase_sched_mod_init(void)
 {
+    phase_sched_init(&phase_sched);
     return SUCCESS;
 }
 
 void __exit phase_sched_mod_exit(void)
 {
+    phase_sched_exit(&phase_sched);
 }
 
 /**************************************************************/

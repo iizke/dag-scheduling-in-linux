@@ -11,23 +11,6 @@
 #include <linux/kobject.h>
 #include <linux/sysfs.h>
 
-struct phase_sysfs {
-    struct subsystem subsystem;
-    struct sysfs_ops phase_ops;
-    struct attribute phase_attrs[2];
-    struct kobj_type phase_ktype;
-    struct phase_req req;
-
-};
-
-struct phase_req {
-    struct phase_attr pattr;
-    int cmd;
-    int src_pid;
-    int dest_pid;
-    int weight;
-};
-
 struct phase_attr {
     struct attribute attr;
     ssize_t (*show)(void *obj, char *buffer);
@@ -46,6 +29,10 @@ struct phase_kset {
     struct sysfs_ops kops;
 };
 
+int build_phase_sysfs_tree(struct phase_sysfs *ps);
+int free_phase_sysfs_tree(struct phase_sysfs *ps);
+
+/** MACROS FOR BUILDING SYSFS TREE */
 #define DECL_PHASE_ATTR(name,mode,_show_func,_store_func) \
     static struct phase_attr name =  \
                             __ATTR(name,mode,_show_func,_store_func);

@@ -74,6 +74,13 @@ ssize_t phase_sched_show_req (void* obj, char *buf)
 ssize_t phase_sched_store_req (void* obj, const char *buf, size_t size)
 {
     struct  phase_sysfs *ps = obj;
+    struct phase_req * req = (struct phase_req*) buf;
+    
+    if (size != sizeof(struct phase_req)) {
+        printk("Input type is not expected, storing request is end \n");
+        return 0;
+    }
+
     return size;
 }
 
@@ -83,12 +90,12 @@ int phase_sysfs_init(struct phase_sysfs *ps)
         return FAIL;
     ps->phase_ops.show = phase_sched_show;
     ps->phase_ops.store = phase_sched_store;
-    ps->req.attr.name = __stringify(req);
-    ps->req.attr.mode = 0666;
-    ps->req.attr.owner = THIS_MODULE;
-    ps->req.show = phase_sched_show_req;
-    ps->req.store = phase_sched_store_req;
-    ps->phase_attrs[0] = &ps->req.attr;
+    ps->req.pattr.attr.name = __stringify(req);
+    ps->req.pattr.attr.mode = 0666;
+    ps->req.pattr.attr.owner = THIS_MODULE;
+    ps->req.pattr.show = phase_sched_show_req;
+    ps->req.pattr.store = phase_sched_store_req;
+    ps->phase_attrs[0] = &ps->req.pattr.attr;
     ps->phase_attrs[1] = NULL;
     ps->phase_ktype.release = phase_sched_release;
     ps->phase_ktype.sysfs_ops = &ps->phase_ops;

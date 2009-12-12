@@ -1,17 +1,31 @@
 #include "phase_sched.h"
 #include "phase_sysfs.h"
+#include "dag.h"
+
+struct phase_sched phase_sched;
  
+int phase_req_init(struct phase_req *req)
+{
+    return SUCCESS;
+}
+
+int phase_req_free(struct phase_req *req)
+{
+    return SUCCESS;
+}
+
+
 int cpuload_list_reset(struct cpuload_list *list)
 {
     return SUCCESS;
 }
 
-int dag_reset(struct dag *dag)
+int dag_reset(struct phase_dag *dag)
 {
     return SUCCESS;
 }
 
-static int rebuild_dag(struct phase_req *req) 
+static int rebuild_dag(struct phase_dag *dag, struct phase_req *req) 
 {
     if (!req)
         return FAIL;
@@ -19,35 +33,35 @@ static int rebuild_dag(struct phase_req *req)
     return SUCCESS;
 }
 
-static int phase_sched_schedule(struct phase_req *req)
+static int phase_sched_schedule(struct phase_sched *ps)
 {
     return SUCCESS;
 }
 
-int phase_sched_do_req(struct phase_req *req)
+int phase_sched_do_req(struct phase_sched *ps, struct phase_req *req)
 {
     int flag;
 
-    flag = rebuild_dag(&req);
+    flag = rebuild_dag(&ps->dag, req);
     if (flag != SUCCESS)
         return flag;
     
-    flag = phase_sched_schedule(&req);
+    flag = phase_sched_schedule(ps);
     if (flag != SUCCESS)
         return flag;
 
     return SUCCESS;
 }
 
-int phase_sched_reset(void)
+int phase_sched_reset(struct phase_sched *ps)
 {
     int flag;
     
-    flag = dag_reset(&dag);
+    flag = dag_reset(&ps->dag);
     if (flag != SUCCESS)
         return flag;
 
-    flag = cpuload_list_reset(&cpuload_list);
+    flag = cpuload_list_reset(&ps->cpuload_list);
     if (flag != SUCCESS)
         return flag;
 
@@ -72,7 +86,7 @@ static int phase_sched_exit(struct phase_sched *ps)
     if (!ps)
         return FAIL;
         
-    free_phase_sysfs_tree(ps);
+    //free_phase_sysfs_tree(ps);
     phase_dag_free(&ps->dag);
     cpuload_list_free(&ps->cpuload_list);
     return SUCCESS;

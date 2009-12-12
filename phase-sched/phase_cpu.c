@@ -16,3 +16,8 @@ int cpuload_list_adjust_load(struct cpuload_list *list, struct phase_cpu *cpu, i
 {
     return SUCCESS;
 }
+
+int cpuload_list_free(struct cpuload_list *list)
+{
+    return SUCCESS;
+}

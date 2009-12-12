@@ -12,7 +12,7 @@ ifeq ($(PATCHLEVEL),4)
  exit 1
 endif
 
-RESMAN_CORE_OBJS := phase_sched_mod.o phase_task.o phase_cpu.o dag.o
+RESMAN_CORE_OBJS := phase_sched_mod.o phase_task.o phase_cpu.o dag.o phase_sysfs.o
 $(MODULE_NAME)-objs := $(RESMAN_CORE_OBJS)
 
 ifdef TOPDIR

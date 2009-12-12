@@ -29,9 +29,6 @@ struct phase_kset {
     struct sysfs_ops kops;
 };
 
-int build_phase_sysfs_tree(struct phase_sysfs *ps);
-int free_phase_sysfs_tree(struct phase_sysfs *ps);
-
 /** MACROS FOR BUILDING SYSFS TREE */
 #define DECL_PHASE_ATTR(name,mode,_show_func,_store_func) \
     static struct phase_attr name =  \

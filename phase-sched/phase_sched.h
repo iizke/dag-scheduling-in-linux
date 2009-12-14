@@ -8,7 +8,7 @@
 #include "phase_def.h"
 #include "phase_sysfs.h"
 #include "phase_cpu.h"
-#include "dag.h"
+#include "phase_dag.h"
 
 // command codes
 #define PHASE_SCHED_CMD_ADD    0

@@ -43,6 +43,7 @@ int phase_sched_reset(struct phase_sched *ps);
 
 //int rebuild_dag(struct phase_req *req);
 //int phase_sched_schedule(struct phase_req *req);
+int phase_sysfs_init(struct phase_sched *ps);
 int build_phase_sysfs_tree(struct phase_sched *ps);
 int free_phase_sysfs_tree(struct phase_sched *ps);
 

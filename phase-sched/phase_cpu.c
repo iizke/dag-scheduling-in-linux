@@ -21,3 +21,10 @@ int cpuload_list_free(struct cpuload_list *list)
 {
     return SUCCESS;
 }
+
+int cpuload_list_get_light_cpu(struct cpuload_list *list)
+{
+    if (!list)
+        return -1;
+    return list->least_load_id;
+}

@@ -11,9 +11,10 @@
 #include "phase_dag.h"
 
 // command codes
-#define PHASE_SCHED_CMD_ADD    0
-#define PHASE_SCHED_CMD_DEL    1
-
+#define PHASE_SCHED_CMD_ADD     0
+#define PHASE_SCHED_CMD_DEL     1
+#define PHASE_SCHED_SRC_PRIO    0
+#define PHASE_SCHED_BATCH_PRIO  10
 struct phase_req {
     int cmd;
     int src_pid;

@@ -26,5 +26,5 @@ int cpuload_list_init(struct cpuload_list *list);
 /** move phase_cpu to new id in load-list */
 int cpuload_list_adjust_load(struct cpuload_list *list, struct phase_cpu *cpu, int newload);
 int cpuload_list_free(struct cpuload_list *list);
-
+int cpuload_list_get_light_cpu(struct cpuload_list *list);
 #endif

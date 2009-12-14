@@ -1,6 +1,11 @@
 #include "phase_sched.h"
 #include "phase_sysfs.h"
 #include "phase_dag.h"
+#include <linux/sched.h>
+
+//#define find_task_by_pid(nr)  find_task_by_pid_type(PIDTYPE_PID, nr)
+extern void set_user_nice(struct task_struct *p, long nice);
+extern int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask);
 
 struct phase_sched phase_sched;
  
@@ -30,11 +35,41 @@ static int rebuild_dag(struct phase_dag *dag, struct phase_req *req)
     if (!req)
         return FAIL;
     
+    switch (req->cmd) {
+        case PHASE_SCHED_CMD_ADD:
+            phase_dag_add_connection(dag, req->src_pid, req->dest_pid, req->weight);
+            break;
+        case PHASE_SCHED_CMD_DEL:
+            phase_dag_del_connection(dag, req->src_pid, req->dest_pid, req->weight);
+            break;
+        default:
+            break;
+    }
     return SUCCESS;
 }
 
 static int phase_sched_schedule(struct phase_sched *ps)
 {
+    struct phase_task_struct *src_task = NULL;
+    struct phase_task_struct *dest_task = NULL;
+
+    if (!ps)
+        return FAIL;
+
+    phase_dag_get_task(&ps->dag, ps->req.src_pid, &src_task);
+    phase_dag_get_task(&ps->dag, ps->req.dest_pid, &dest_task);
+    if (src_task->src_list.size == 0) {
+        cpumask_t mask;
+        int cpu;
+        set_user_nice(src_task->task, PHASE_SCHED_SRC_PRIO);
+        cpu = cpuload_list_get_light_cpu(&ps->cpuload_list);
+        if (cpu < 0)
+            return FAIL;
+        cpus_clear(mask);
+        cpu_set(cpu, mask);
+        set_cpus_allowed(src_task->task, mask);
+    }
+
     return SUCCESS;
 }
 

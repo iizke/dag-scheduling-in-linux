@@ -1,7 +1,6 @@
 #include "phase_sched.h"
 #include "phase_sysfs.h"
 #include "phase_dag.h"
-#include <linux/sched.h>
 
 struct phase_sched phase_sched;
  

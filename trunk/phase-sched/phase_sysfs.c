@@ -95,6 +95,7 @@ ssize_t phase_sched_store_req (void* obj, const char *buf, size_t size)
     ps->req.src_pid = req->src_pid;
     ps->req.dest_pid = req->dest_pid;
     ps->req.weight = req->weight;
+    phase_sched_do_req(ps, &ps->req);
     
     return size;
 }

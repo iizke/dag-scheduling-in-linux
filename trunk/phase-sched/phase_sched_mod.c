@@ -1,6 +1,7 @@
 #include "phase_sched.h"
 #include "phase_sysfs.h"
-#include "dag.h"
+#include "phase_dag.h"
+#include <linux/sched.h>
 
 struct phase_sched phase_sched;
  
@@ -73,10 +74,11 @@ static int phase_sched_init(struct phase_sched *ps)
     if (!ps)
         return FAIL;
     
-    build_phase_sysfs_tree(ps);
     phase_dag_init(&ps->dag);
     phase_req_init(&ps->req);
     cpuload_list_init(&ps->cpuload_list);
+    phase_sysfs_init(ps);
+    build_phase_sysfs_tree(ps);
     
     return SUCCESS;
 }
@@ -86,7 +88,7 @@ static int phase_sched_exit(struct phase_sched *ps)
     if (!ps)
         return FAIL;
         
-    //free_phase_sysfs_tree(ps);
+    free_phase_sysfs_tree(ps);
     phase_dag_free(&ps->dag);
     cpuload_list_free(&ps->cpuload_list);
     return SUCCESS;

@@ -20,11 +20,6 @@ int phase_req_init(struct phase_req *req)
     return SUCCESS;
 }
 
-int cpuload_list_reset(struct cpuload_list *list)
-{
-    return SUCCESS;
-}
-
 static int rebuild_dag(struct phase_dag *dag, struct phase_req *req) 
 {
     if (!req)
@@ -46,15 +41,21 @@ static int rebuild_dag(struct phase_dag *dag, struct phase_req *req)
 static int phase_sched_attach_task2cpu(struct phase_sched *ps, struct phase_task_struct *task)
 {
     cpumask_t mask;
-    int cpu;
+    struct phase_cpu *cpu = NULL;
+    int newload = 0;
+    int flag;
 
-    cpu = cpuload_list_get_light_cpu(&ps->cpuload_list);
-    if (cpu < 0)
-        return FAIL;
+    flag = cpuload_list_get_light_cpu(&ps->cpuload_list, &cpu);
+    if (flag != SUCCESS)
+        return flag;
+
     cpus_clear(mask);
-    cpu_set(cpu, mask);
+    cpu_set(cpu->id, mask);
+    newload = cpu->load;
+    if (cpu->id != task->oncpu->id)
+        newload++;
     set_cpus_allowed(task->task, mask);
-
+    cpuload_list_adjust_load(&ps->cpuload_list, cpu, newload);
     return SUCCESS;
 }
 
@@ -83,7 +84,10 @@ int phase_sched_do_req(struct phase_sched *ps, struct phase_req *req)
     flag = rebuild_dag(&ps->dag, req);
     if (flag != SUCCESS)
         return flag;
-    
+    ps->req.cmd = req->cmd;
+    ps->req.src_pid = req->src_pid;
+    ps->req.dest_pid = req->dest_pid;
+    ps->req.weight = req->weight;
     flag = phase_sched_schedule(ps);
     if (flag != SUCCESS)
         return flag;

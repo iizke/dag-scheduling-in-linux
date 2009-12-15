@@ -15,6 +15,7 @@
 #define PHASE_SCHED_CMD_DEL     1
 #define PHASE_SCHED_SRC_PRIO    0
 #define PHASE_SCHED_BATCH_PRIO  10
+
 struct phase_req {
     int cmd;
     int src_pid;
@@ -33,6 +34,7 @@ struct phase_sched {
     struct cpuload_list cpuload_list;
     /** DAG data: information about DAG tree of processes */
     struct phase_dag dag;
+
 };
 
 /** phase_sched: global variable */

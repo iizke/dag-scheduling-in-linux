@@ -2,6 +2,7 @@
 #define PHASE_DAG_H
 
 #include <linux/sched.h>
+#include <linux/hash.h>
 
 /** How to mapping pid -> task struct */
 
@@ -20,15 +21,15 @@ struct phase_task_struct {
 };
 
 struct phase_dag {
-    //
+    // hash table of phase_task_struct
 };
- 
+
+int phase_dag_reset(struct phase_dag *dag);
 int phase_dag_init(struct phase_dag *dag);
 int phase_dag_free(struct phase_dag *dag);
 int phase_dag_add_connection(struct phase_dag *dag, int src_pid, int dest_pid, int weight);
 int phase_dag_del_connection(struct phase_dag *dag, int src_pid, int dest_pid, int weight);
 int phase_dag_get_task(struct phase_dag *dag, int pid, struct phase_task_struct **task);
-
 
 #endif
 

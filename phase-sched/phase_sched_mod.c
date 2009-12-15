@@ -4,28 +4,23 @@
 #include <linux/sched.h>
 
 //#define find_task_by_pid(nr)  find_task_by_pid_type(PIDTYPE_PID, nr)
-extern void set_user_nice(struct task_struct *p, long nice);
-extern int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask);
+//extern void set_user_nice(struct task_struct *p, long nice);
+//extern int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask);
 
 struct phase_sched phase_sched;
  
 int phase_req_init(struct phase_req *req)
 {
+    if (!req)
+        return FAIL;
+    req->cmd = -1;
+    req->weight = 0;
+    req->src_pid = -1;
+    req->dest_pid = -1;
     return SUCCESS;
 }
-
-int phase_req_free(struct phase_req *req)
-{
-    return SUCCESS;
-}
-
 
 int cpuload_list_reset(struct cpuload_list *list)
-{
-    return SUCCESS;
-}
-
-int dag_reset(struct phase_dag *dag)
 {
     return SUCCESS;
 }
@@ -48,6 +43,21 @@ static int rebuild_dag(struct phase_dag *dag, struct phase_req *req)
     return SUCCESS;
 }
 
+static int phase_sched_attach_task2cpu(struct phase_sched *ps, struct phase_task_struct *task)
+{
+    cpumask_t mask;
+    int cpu;
+
+    cpu = cpuload_list_get_light_cpu(&ps->cpuload_list);
+    if (cpu < 0)
+        return FAIL;
+    cpus_clear(mask);
+    cpu_set(cpu, mask);
+    set_cpus_allowed(task->task, mask);
+
+    return SUCCESS;
+}
+
 static int phase_sched_schedule(struct phase_sched *ps)
 {
     struct phase_task_struct *src_task = NULL;
@@ -59,15 +69,8 @@ static int phase_sched_schedule(struct phase_sched *ps)
     phase_dag_get_task(&ps->dag, ps->req.src_pid, &src_task);
     phase_dag_get_task(&ps->dag, ps->req.dest_pid, &dest_task);
     if (src_task->src_list.size == 0) {
-        cpumask_t mask;
-        int cpu;
         set_user_nice(src_task->task, PHASE_SCHED_SRC_PRIO);
-        cpu = cpuload_list_get_light_cpu(&ps->cpuload_list);
-        if (cpu < 0)
-            return FAIL;
-        cpus_clear(mask);
-        cpu_set(cpu, mask);
-        set_cpus_allowed(src_task->task, mask);
+        phase_sched_attach_task2cpu(ps, src_task);
     }
 
     return SUCCESS;
@@ -92,7 +95,7 @@ int phase_sched_reset(struct phase_sched *ps)
 {
     int flag;
     
-    flag = dag_reset(&ps->dag);
+    flag = phase_dag_reset(&ps->dag);
     if (flag != SUCCESS)
         return flag;
 

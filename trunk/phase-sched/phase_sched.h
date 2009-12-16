@@ -13,6 +13,8 @@
 // command codes
 #define PHASE_SCHED_CMD_ADD     0
 #define PHASE_SCHED_CMD_DEL     1
+#define PHASE_SCHED_CMD_NEW     2
+
 #define PHASE_SCHED_SRC_PRIO    0
 #define PHASE_SCHED_BATCH_PRIO  10
 

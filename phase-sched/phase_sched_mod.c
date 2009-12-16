@@ -27,10 +27,12 @@ static int rebuild_dag(struct phase_dag *dag, struct phase_req *req)
     
     switch (req->cmd) {
         case PHASE_SCHED_CMD_ADD:
-            phase_dag_add_connection(dag, req->src_pid, req->dest_pid, req->weight);
+            phase_dag_add_link(dag, req->src_pid, req->dest_pid, req->weight);
             break;
         case PHASE_SCHED_CMD_DEL:
-            phase_dag_del_connection(dag, req->src_pid, req->dest_pid, req->weight);
+            phase_dag_del_link(dag, req->src_pid, req->dest_pid, req->weight);
+        case PHASE_SCHED_CMD_NEW:
+            phase_dag_register_task(dag, req->src_pid);
             break;
         default:
             break;
@@ -52,7 +54,9 @@ static int phase_sched_attach_task2cpu(struct phase_sched *ps, struct phase_task
     cpus_clear(mask);
     cpu_set(cpu->id, mask);
     newload = cpu->load;
-    if (cpu->id != task->oncpu->id)
+    if (! task->oncpu)
+        newload++;
+    else if (cpu->id != task->oncpu->id)
         newload++;
     set_cpus_allowed(task->task, mask);
     cpuload_list_adjust_load(&ps->cpuload_list, cpu, newload);

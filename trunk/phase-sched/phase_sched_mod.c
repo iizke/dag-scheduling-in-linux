@@ -30,7 +30,7 @@ static int rebuild_dag(struct phase_dag *dag, struct phase_req *req)
             phase_dag_add_link(dag, req->src_pid, req->dest_pid, req->weight);
             break;
         case PHASE_SCHED_CMD_DEL:
-            phase_dag_del_link(dag, req->src_pid, req->dest_pid, req->weight);
+            phase_dag_del_link(dag, req->src_pid, req->dest_pid);
         case PHASE_SCHED_CMD_NEW:
             phase_dag_register_task(dag, req->src_pid);
             break;
@@ -40,7 +40,7 @@ static int rebuild_dag(struct phase_dag *dag, struct phase_req *req)
     return SUCCESS;
 }
 
-static int phase_sched_attach_task2cpu(struct phase_sched *ps, struct phase_task_struct *task)
+static int phase_sched_attach_task2cpu(struct phase_sched *ps, struct phase_task *task)
 {
     cpumask_t mask;
     struct phase_cpu *cpu = NULL;
@@ -65,15 +65,15 @@ static int phase_sched_attach_task2cpu(struct phase_sched *ps, struct phase_task
 
 static int phase_sched_schedule(struct phase_sched *ps)
 {
-    struct phase_task_struct *src_task = NULL;
-    struct phase_task_struct *dest_task = NULL;
+    struct phase_task *src_task = NULL;
+    struct phase_task *dest_task = NULL;
 
     if (!ps)
         return FAIL;
 
     phase_dag_get_task(&ps->dag, ps->req.src_pid, &src_task);
     phase_dag_get_task(&ps->dag, ps->req.dest_pid, &dest_task);
-    if (src_task->src_list.size == 0) {
+    if (phase_task_list_get_size(&src_task->src_list) == 0) {
         set_user_nice(src_task->task, PHASE_SCHED_SRC_PRIO);
         phase_sched_attach_task2cpu(ps, src_task);
     }

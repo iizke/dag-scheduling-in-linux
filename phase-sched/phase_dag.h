@@ -9,24 +9,10 @@
 #define MAX_TASKS   50
 struct phase_task;
 
-/**
- * phase_task_list: list of phase_task
- * There is a constraint between list and weight. We always use list and weight in pair.
- */
-struct phase_task_list {
-    int size;
-    struct phase_task *list[MAX_TASKS - 1];
-    int weight[MAX_TASKS - 1];
-};
-
-#define phase_task_list_get_size(p) ((p)->size)
-
 /** phase_task: task's info in DAG */
 struct phase_task {
     int pid;
     int index;
-    struct phase_task_list dest_list;
-    struct phase_task_list src_list;
     struct phase_cpu *oncpu;
     struct task_struct *task;
 };
@@ -64,11 +50,11 @@ int
 phase_dag_free(struct phase_dag *dag);
 
 int
-                phase_dag_add_link(
-                                   struct phase_dag *dag,
-                                   int src_pid,
-                                   int dest_pid,
-                                   int weight);
+phase_dag_add_link(
+                   struct phase_dag *dag,
+                   int src_pid,
+                   int dest_pid,
+                   int weight);
 
 int
 phase_dag_del_link(struct phase_dag *dag, int src_pid, int dest_pid);

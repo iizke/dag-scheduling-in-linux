@@ -31,18 +31,6 @@ phase_dag_free(struct phase_dag *dag)
 }
 
 static int
-phase_task_list_reset(struct phase_task_list *l)
-{
-    int i = 0;
-    if (!l)
-        return ERR_PHASE_TASK_LIST_NULL;
-    l->size = 0;
-    for (i = 0; i < (MAX_TASKS - 1); i++)
-        l->list[i] = NULL;
-    return SUCCESS;
-}
-
-static int
 phase_task_reset(struct phase_task *t)
 {
     int flag;
@@ -50,11 +38,10 @@ phase_task_reset(struct phase_task *t)
     if (!t)
         return ERR_PHASE_TASK_NULL;
     t->oncpu = NULL;
-    t->pid = 0;
+    t->pid = -1;
+    t->index = -1;
     t->task = NULL;
-    flag = phase_task_list_reset(&t->dest_list);
-    flag = phase_task_list_reset(&t->src_list);
-    return flag;
+    return SUCCESS;
 }
 
 static int
@@ -69,6 +56,12 @@ task_pool_reset(struct task_pool *tp)
         tp->state[i] = TASK_POOL_STATE_UNUSED;
         phase_task_reset(&tp->tasks[i]);
     }
+    return SUCCESS;
+}
+
+static int
+link_pool_reset(struct link_pool *lp)
+{
     return SUCCESS;
 }
 
@@ -113,8 +106,8 @@ _phase_dag_add_link(
                     struct phase_task *dest,
                     int weight)
 {
-    phase_task_list_add_task(src->dest_list, dest->task, weight);
-    phase_task_list_add_task(dest->src_list, src->task, weight);
+    phase_task_list_add_task(&src->dest_list, dest, weight);
+    phase_task_list_add_task(&dest->src_list, src, weight);
     return SUCCESS;
 }
 
@@ -124,8 +117,8 @@ _phase_dag_del_link(
                     struct phase_task *src,
                     struct phase_task *dest)
 {
-    phase_task_list_del_task(src->dest_list, dest->task);
-    phase_task_list_del_task(dest->src_list, src->task);
+    phase_task_list_del_task(&src->dest_list, dest);
+    phase_task_list_del_task(&dest->src_list, src);
     return SUCCESS;
 }
 
@@ -168,7 +161,7 @@ phase_dag_del_link(struct phase_dag *dag, int src_pid, int dest_pid)
 
     phase_dag_get_task(dag, src_pid, &src_task);
     phase_dag_get_task(dag, dest_pid, &dest_task);
-    _phase_dag_del_link(dag, src_task, dest_task, weight);
+    _phase_dag_del_link(dag, src_task, dest_task);
 
     return SUCCESS;
 }

@@ -239,8 +239,6 @@ phase_task_list_del_destlink(struct phase_task_list *l, struct phase_link *link)
 
     if (l->size <= 1) {
         l->last_link = NULL;
-        link->dest_next = NULL;
-        link->dest_prev = NULL;
         l->size = 0;
     } else {
         struct phase_link *next = link->dest_next;
@@ -251,6 +249,8 @@ phase_task_list_del_destlink(struct phase_task_list *l, struct phase_link *link)
             l->last_link = next;
         l->size--;
     }
+    link->dest_next = NULL;
+    link->dest_prev = NULL;
 
     return SUCCESS;
 }
@@ -268,8 +268,6 @@ phase_task_list_del_srclink(struct phase_task_list *l, struct phase_link *link)
 
     if (l->size <= 1) {
         l->last_link = NULL;
-        link->src_next = NULL;
-        link->src_prev = NULL;
         l->size = 0;
     } else {
         struct phase_link *next = link->src_next;
@@ -280,7 +278,8 @@ phase_task_list_del_srclink(struct phase_task_list *l, struct phase_link *link)
             l->last_link = next;
         l->size--;
     }
-
+    link->src_next = NULL;
+    link->src_prev = NULL;
     return SUCCESS;
 }
 

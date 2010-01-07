@@ -7,7 +7,14 @@
 /** How to mapping pid -> task struct */
 
 #define MAX_TASKS   50
-struct phase_task;
+struct phase_link;
+
+struct phase_task_list {
+    int size;
+    struct phase_link *last_link;
+};
+
+#define phase_task_list_get_size(p) ((p)->size)
 
 /** phase_task: task's info in DAG */
 struct phase_task {
@@ -15,10 +22,17 @@ struct phase_task {
     int index;
     struct phase_cpu *oncpu;
     struct task_struct *task;
+    struct phase_task_list src_list;
+    struct phase_task_list dest_list;
 };
 
+#define phase_task_get_srclist_size(p)  ((p)->src_list.size)
+
 struct phase_link {
-    struct phase_link *next;
+    struct phase_link *src_next;
+    struct phase_link *src_prev;
+    struct phase_link *dest_next;
+    struct phase_link *dest_prev;
     int src_index;
     int dest_index;
     int weight;
@@ -27,8 +41,11 @@ struct phase_link {
 
 struct task_pool {
     struct phase_task tasks[MAX_TASKS];
+    int inused_tasks;
     char state[MAX_TASKS];
 };
+
+#define task_pool_is_full(tp)   ((tp)->inused_tasks == MAX_TASKS)
 
 struct link_pool {
     struct phase_link links[MAX_TASKS][MAX_TASKS];
@@ -50,26 +67,29 @@ int
 phase_dag_free(struct phase_dag *dag);
 
 int
-phase_dag_add_link(
-                   struct phase_dag *dag,
-                   int src_pid,
-                   int dest_pid,
-                   int weight);
+                phase_dag_add_link(
+                                   struct phase_dag *dag,
+                                   int src_pid,
+                                   int dest_pid,
+                                   int weight);
 
 int
 phase_dag_del_link(struct phase_dag *dag, int src_pid, int dest_pid);
 
 int
-phase_dag_get_task(
-                   struct phase_dag *dag,
-                   int pid,
-                   struct phase_task **task);
+phase_dag_get_task(struct phase_dag *dag, int pid, struct phase_task **task);
 
 int
-phase_dag_register_task(struct phase_dag *dag, int pid);
+phase_dag_register_task(
+                        struct phase_dag *dag,
+                        int pid,
+                        struct phase_task **task);
 
 int
-map_pid2index(struct phase_dag *dag, int pid);
+phase_dag_map_pid2index(struct phase_dag *dag, int pid);
+
+int
+phase_dag_find_index_from_pid(struct phase_dag *dag, int pid);
 
 #endif
 

@@ -22,6 +22,7 @@ int phase_req_init(struct phase_req *req)
 
 static int rebuild_dag(struct phase_dag *dag, struct phase_req *req) 
 {
+    struct phase_task *task = NULL;
     if (!req)
         return FAIL;
     
@@ -32,7 +33,7 @@ static int rebuild_dag(struct phase_dag *dag, struct phase_req *req)
         case PHASE_SCHED_CMD_DEL:
             phase_dag_del_link(dag, req->src_pid, req->dest_pid);
         case PHASE_SCHED_CMD_NEW:
-            phase_dag_register_task(dag, req->src_pid);
+            phase_dag_register_task(dag, req->src_pid, &task);
             break;
         default:
             break;
@@ -73,7 +74,7 @@ static int phase_sched_schedule(struct phase_sched *ps)
 
     phase_dag_get_task(&ps->dag, ps->req.src_pid, &src_task);
     phase_dag_get_task(&ps->dag, ps->req.dest_pid, &dest_task);
-    if (phase_task_list_get_size(&src_task->src_list) == 0) {
+    if (phase_task_get_srclist_size(src_task) == 0) {
         set_user_nice(src_task->task, PHASE_SCHED_SRC_PRIO);
         phase_sched_attach_task2cpu(ps, src_task);
     }

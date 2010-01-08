@@ -17,7 +17,6 @@
 #include "parser.h"
 #include "errors.h"
 #include "mbench-mpi.h"
-#include "dagsched.h"
 
 #define MAX_INT     32767
 
@@ -290,29 +289,6 @@ int main(int argc, char ** argv)
         printf("Please read usage carefully \n");
         return 0;
     }
-
-    /*
-     * Set nice for each process & Set BATCH policy
-     *
-     char *strpid, *strnice;
-     int pid, nice;
-     pid = getpid();
-     strpid = itostr(pid);
-     // nice = opts.nice;
-     // strnice = itostr(nice);
-
-     if (!fork()){
-     if (rank % 2 == 0)
-     err = execlp("schedtool","schedtool", "-v","-a","0",strpid, 0);
-     else
-     err = execlp("schedtool","schedtool", "-v","-a","1",strpid, 0);
-
-     MPI_Finalize();
-     return 0;
-     }
-     *
-     * End setting ...
-     */
 
     wait(&status);
 

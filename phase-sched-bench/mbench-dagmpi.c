@@ -27,7 +27,7 @@ void script_usage()
 /*---------------------------------------------------------------------
  * build_action_table function
  *
- * it make action-table from opts (options) of command-line
+ * it makes action-table from opts (options) of command-line
  * Return : 0 if SUCCESS, -1 if FAIL
  *
  *      - Open file script
@@ -122,9 +122,7 @@ int build_action_table(const struct cmdoptions *opts,
 
             cur = next;
             cur->next = NULL;
-
             acttbl->script[count - 1].nsteps += 1;
-            //          printf("Script: %s %d %d \n",action,num1,num2);
         } /* if */
     } /* while */
 
@@ -169,24 +167,13 @@ int build_action_table(const struct cmdoptions *opts,
 int build_process(const struct action_script *script, int rank, int dagid)
 {
     int i, loop_flag, err = 0;
-    //  int *tmp;
     struct action_struct *cur;
     MPI_Status status;
 
     loop_flag = 1;
-    /*  tmp = malloc(sizeof(i)*script->nsteps);
-
-     for (i=0; i<script->nsteps; i++)
-     tmp[i] = MAX_INT;
-     */
     if (script->nloops < 0)
         loop_flag = -1;
 
-    /*
-     * Loop forever if script->nloops < 0
-     * else only loop (script->nloops) times
-     */
-    //  printf("nsteps=%d, nloops=%d, flag=%d \n", script->nsteps, script->nloops,loop_flag);
     for (i = 0; i * loop_flag < loop_flag * script->nloops; i = (i + 1)
             * (loop_flag + 1) / 2) {
         int j;
@@ -233,11 +220,6 @@ int build_process(const struct action_script *script, int rank, int dagid)
                 else
                     printf("p%d : Recv %d , %d\n", rank, arg1, arg2);
 
-                /*                  if (buf)
-                 free(buf);
-                 printf("after free recv %d\n",buf);
-                 buf = NULL;
-                 */
                 break;
             case ACT_GENLOAD:
                 printf("p%d : Genload %d , %d \n", rank, arg1, arg2);

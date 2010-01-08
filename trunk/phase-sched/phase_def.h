@@ -23,6 +23,8 @@
 #define ERR_CPULOAD_LIST_NULL                   (-11)
 #define ERR_CPU_LIST_NULL                       (-12)
 #define ERR_PHASE_CPU_NULL                      (-13)
+#define ERR_PHASE_SCHED_NULL                    (-14)
+#define ERR_PHASE_REQ_NULL                      (-15)
 
 #define TASK_POOL_STATE_UNUSED                  0
 #define TASK_POOL_STATE_INUSED                  1

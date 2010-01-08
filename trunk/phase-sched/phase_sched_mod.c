@@ -9,31 +9,36 @@
 
 struct phase_sched phase_sched;
  
-int phase_req_init(struct phase_req *req)
+int
+phase_req_init(struct phase_req *req)
 {
     if (!req)
         return FAIL;
     req->cmd = -1;
     req->weight = 0;
-    req->src_pid = -1;
-    req->dest_pid = -1;
+    req->src_id = -1;
+    req->dest_id = -1;
     return SUCCESS;
 }
 
-static int rebuild_dag(struct phase_dag *dag, struct phase_req *req) 
+static int
+phase_sched_rebuild_dag(struct phase_sched *ps, struct phase_req *req) 
 {
     struct phase_task *task = NULL;
+
+    if (!ps)
+        return ERR_PHASE_SCHED_NULL;
     if (!req)
-        return FAIL;
-    
+        return ERR_PHASE_REQ_NULL;
+
     switch (req->cmd) {
         case PHASE_SCHED_CMD_ADD:
-            phase_dag_add_link(dag, req->src_pid, req->dest_pid, req->weight);
+            _phase_dag_add_link(&ps->dag, ps->req.src_id, ps->req.dest_id, ps->req.weight);
             break;
         case PHASE_SCHED_CMD_DEL:
-            phase_dag_del_link(dag, req->src_pid, req->dest_pid);
+            _phase_dag_del_link(&ps->dag, ps->req.src_id, ps->req.dest_id);
         case PHASE_SCHED_CMD_NEW:
-            phase_dag_register_task(dag, req->src_pid, &task);
+            phase_dag_register_task(&ps->dag, req->src_id, &task);
             break;
         default:
             break;
@@ -48,56 +53,99 @@ static int phase_sched_attach_task2cpu(struct phase_sched *ps, struct phase_task
     int newload = 0;
     int flag;
 
-    flag = cpuload_list_get_light_cpu(&ps->cpuload_list, &cpu);
-    if (flag != SUCCESS)
-        return flag;
+    if (!phase_task_is_batch(task)) {
+        flag = cpuload_list_get_light_cpu(&ps->cpuload_list, &cpu);
+        if (flag != SUCCESS)
+            return flag;
 
-    cpus_clear(mask);
-    cpu_set(cpu->id, mask);
-    newload = cpu->load;
-    if (! task->oncpu)
-        newload++;
-    else if (cpu->id != task->oncpu->id)
-        newload++;
+        cpus_clear(mask);
+        cpu_set(cpu->id, mask);
+        newload = cpu->load;
+        if (! task->oncpu)
+            newload++;
+        else if (cpu->id != task->oncpu->id)
+            newload++;
+    } else {
+        cpus_setall(mask);
+        if (task->oncpu) {
+            newload = task->oncpu->load - 1;
+            cpu = task->oncpu;
+        } else {
+            cpu = NULL;
+            newload = 0;
+        }
+    }
+
     set_cpus_allowed(task->task, mask);
     cpuload_list_adjust_load(&ps->cpuload_list, cpu, newload);
+
     return SUCCESS;
 }
 
-static int phase_sched_schedule(struct phase_sched *ps)
+static int
+schedule_task(struct phase_sched *ps, int index)
 {
-    struct phase_task *src_task = NULL;
-    struct phase_task *dest_task = NULL;
-
+    struct phase_task * t = NULL;
     if (!ps)
-        return FAIL;
+        return ERR_PHASE_SCHED_NULL;
 
-    phase_dag_get_task(&ps->dag, ps->req.src_pid, &src_task);
-    phase_dag_get_task(&ps->dag, ps->req.dest_pid, &dest_task);
-    if (phase_task_get_srclist_size(src_task) == 0) {
-        set_user_nice(src_task->task, PHASE_SCHED_SRC_PRIO);
-        phase_sched_attach_task2cpu(ps, src_task);
+    t = &(ps->dag.task_pool.tasks[index]);
+
+    if (phase_task_get_srclist_size(t) == 0) {
+        if (phase_task_get_destlist_size(t) > 0)
+            set_user_nice(t->task, PHASE_SCHED_SRC_PRIO);
+        else 
+            set_user_nice(t->task, PHASE_SCHED_BATCH_PRIO);
+        phase_sched_attach_task2cpu(ps, t);
     }
 
     return SUCCESS;
 }
 
+static int
+phase_sched_schedule(struct phase_sched *ps)
+{
+    if (!ps)
+        return ERR_PHASE_SCHED_NULL;
+
+    if (ps->req.cmd != PHASE_SCHED_CMD_NEW) {
+        schedule_task(ps, ps->req.src_id);
+        schedule_task(ps, ps->req.dest_id);
+    }
+
+    return SUCCESS;
+}
+
+/**
+ * phase_sched_do_req
+ * @ps: phase sched
+ * @req: user request
+ * @return: error code
+ *
+ * Processing user request.
+ * Note: src_id/dest_id in user-request is PID, but
+ *       src_id/dest_id in phase-sched-request is an index.
+ */
 int phase_sched_do_req(struct phase_sched *ps, struct phase_req *req)
 {
     int flag;
 
-    flag = rebuild_dag(&ps->dag, req);
-    if (flag != SUCCESS)
-        return flag;
-    ps->req.cmd = req->cmd;
-    ps->req.src_pid = req->src_pid;
-    ps->req.dest_pid = req->dest_pid;
-    ps->req.weight = req->weight;
-    flag = phase_sched_schedule(ps);
-    if (flag != SUCCESS)
-        return flag;
+    if (!ps)
+        return ERR_PHASE_SCHED_NULL;
+    if (req->cmd != PHASE_SCHED_CMD_NEW) {
+        ps->req.src_id = phase_dag_find_index_from_pid(&ps->dag, req->src_id);
+        ps->req.dest_id = phase_dag_find_index_from_pid(&ps->dag, req->dest_id);
+    } else 
+        ps->req.src_id = req->src_id;
 
-    return SUCCESS;
+    ps->req.cmd = req->cmd;
+    ps->req.weight = req->weight;
+
+    flag = phase_sched_rebuild_dag(ps, req);
+    if (flag != SUCCESS)
+        return flag;
+    flag = phase_sched_schedule(ps);
+    return flag;
 }
 
 int phase_sched_reset(struct phase_sched *ps)

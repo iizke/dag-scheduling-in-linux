@@ -1,0 +1,16 @@
+MyBenchmark - mbench
+
+Mo ta: benchmark throughput doi voi he thong co cac process giao tiep lan nhau: 
+	- Giao tiep theo IPC
+	- Giao tiep theo MPI
+Cho phep nguoi dung khai bao so luong process.
+
+Doi voi giao tiep MPI: cho phep dac ta hoat dong cua process duoi dang script, hoat dong tuan tu, ho tro cac tac vu s(send), r(recieve), g(generate load). Mac dinh la chi thuc hien 1 lan, neu muon lap thi them khoa l(loop).
+	begin 100 	// lap doan code 100 lan
+	send 10 1 	// send mang 10 so int den process 1
+	recv 20 2 	// recv mang 20 so int tu process 2
+	genload 1 10	// tao tai (load) theo mau 1, lap lai 10 lan
+	end		// ket thuc doan chtrinh cua mot process
+
+Doi voi giao tiep IPC: tao ra cac process giao tiep theo chuan SYSTEMV, Pipe, FIFO. Dua tren hpl
+

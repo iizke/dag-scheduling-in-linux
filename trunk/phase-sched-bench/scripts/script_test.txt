@@ -1,0 +1,9 @@
+begin 1
+ssend 1 1
+genload 1 60 
+end
+
+begin 1
+genload 1 10 
+recv 1 0
+end

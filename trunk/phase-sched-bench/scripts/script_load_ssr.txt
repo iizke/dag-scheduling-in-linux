@@ -1,0 +1,41 @@
+begin 1
+genload 1 3
+send 1 1
+genload 1 7
+recv 1 2
+genload 1 3
+end
+
+begin 1
+recv 1 0
+genload 1 13
+recv 1 3
+genload 1 3
+end
+
+begin 1
+send 1 0
+genload 1 13
+recv 1 4
+send 1 3
+end
+
+begin 1
+genload 1 6
+recv 1 2
+recv 1 4
+genload 1 9
+send 1 1
+end
+
+begin 1
+genload 1 5
+send 1 2
+genload 1 8
+send 1 3
+end
+
+begin 3
+genload 1 3
+end
+

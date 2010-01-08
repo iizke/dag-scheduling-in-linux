@@ -20,7 +20,7 @@
  *
  * Describe an action supported :
  * 		action		|	arg1		|	arg2
- *		----------------+-----------------------+--------------
+ *		------------+---------------+--------------
  *		ACT_SEND	|	BUFCOUNT	|	DESTID
  *		ACT_RECV	|	BUFCOUNT	|	SRCID
  *		ACT_GENLOAD	|	GENLOADID	|	NLOOPS

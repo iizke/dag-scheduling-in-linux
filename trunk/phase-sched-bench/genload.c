@@ -19,6 +19,7 @@ void do_heavy()
     for (i = 0; i < 10; i++)
         do_sqrt();
 }
+
 void do_load(int genloadid)
 {
     switch (genloadid) {

@@ -1,0 +1,32 @@
+begin 1
+genload 1 10
+end
+
+begin 2
+genload 1 10 
+end
+
+begin 3
+genload 1 10 
+end
+
+begin 2
+genload 1 10 
+end
+
+begin 1
+genload 1 10
+end
+
+begin 2
+genload 1 10 
+end
+
+begin 3
+genload 1 10 
+end
+
+begin 2
+genload 1 10 
+end
+

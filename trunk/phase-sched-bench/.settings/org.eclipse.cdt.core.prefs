@@ -1,7 +1,7 @@
-#Fri Jan 08 12:28:27 ICT 2010
+#Fri Jan 08 14:58:28 ICT 2010
 eclipse.preferences.version=1
 environment/project/0.2004817172=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<environment append\="true" appendContributed\="true">\n<variable delimiter\=";" name\="PATH" operation\="replace" value\="/usr/lib/lam/bin\:/usr/kerberos/bin\:/usr/local/bin\:/bin\:/usr/bin\:/home/roseman/bin"/>\n<variable delimiter\=";" name\="LD_LIBRARY_PATH" operation\="replace" value\="/usr/lib/lam/lib\:/usr/lib/java-1.6.0/jre/lib/i386/client\:/usr/lib/java-1.6.0/jre/lib/i386\:/usr/lib/xulrunner-1.9\:/usr/lib/xulrunner-1.9"/>\n</environment>\n
-org.eclipse.cdt.core.formatter.alignment_for_arguments_in_method_invocation=18
+org.eclipse.cdt.core.formatter.alignment_for_arguments_in_method_invocation=82
 org.eclipse.cdt.core.formatter.alignment_for_base_clause_in_type_declaration=20
 org.eclipse.cdt.core.formatter.alignment_for_compact_if=0
 org.eclipse.cdt.core.formatter.alignment_for_conditional_expression=18
@@ -9,7 +9,7 @@ org.eclipse.cdt.core.formatter.alignment_for_declarator_list=16
 org.eclipse.cdt.core.formatter.alignment_for_enumerator_list=50
 org.eclipse.cdt.core.formatter.alignment_for_expression_list=0
 org.eclipse.cdt.core.formatter.alignment_for_expressions_in_array_initializer=18
-org.eclipse.cdt.core.formatter.alignment_for_parameters_in_method_declaration=50
+org.eclipse.cdt.core.formatter.alignment_for_parameters_in_method_declaration=82
 org.eclipse.cdt.core.formatter.alignment_for_throws_clause_in_method_declaration=52
 org.eclipse.cdt.core.formatter.brace_position_for_array_initializer=next_line_shifted
 org.eclipse.cdt.core.formatter.brace_position_for_block=end_of_line

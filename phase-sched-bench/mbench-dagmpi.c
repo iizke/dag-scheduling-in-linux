@@ -224,10 +224,10 @@ int build_process(const struct action_script *script, int rank, int dagid)
             case ACT_RECV:
                 /* call malloc ? */
                 buf = malloc(sizeof(*buf) * arg1);
-                dsm_add_mpi_connection(dagid, arg2, rank);
+                //dsm_add_mpi_connection(dagid, arg2, rank);
                 err = MPI_Recv(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD,
                         &status);
-                dsm_remove_mpi_connection(dagid, arg2, rank);
+                //dsm_remove_mpi_connection(dagid, arg2, rank);
                 if (err != MPI_SUCCESS)
                     printf("p%d : Recv %d , %d : failed \n", rank, arg1, arg2);
                 else
@@ -280,8 +280,8 @@ int main(int argc, char ** argv)
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
     /* For DAG SCHED */
-    dsm_init(&dagid);
-    dsm_add_mpitask(dagid, rank);
+    //dsm_init(&dagid);
+    //dsm_add_mpitask(dagid, rank);
 
     /* Parse arguments */
     err = parser_arg(argc, argv, &opts);
@@ -301,7 +301,7 @@ int main(int argc, char ** argv)
     build_process(&acttbl.script[rank], rank, dagid);
 
     /* FOR DAG SCHED */
-    dsm_remove_mpitask(dagid, rank);
+    //dsm_remove_mpitask(dagid, rank);
     MPI_Finalize();
     return 0;
 }

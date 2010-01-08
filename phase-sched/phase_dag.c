@@ -178,7 +178,7 @@ phase_task_list_add_destlink(struct phase_task_list *l, struct phase_link *link)
     return SUCCESS;
 }
 
-static int
+int
 _phase_dag_add_link(struct phase_dag *dag, int src_id, int dest_id, int weight)
 {
     struct phase_link *link = NULL;
@@ -283,7 +283,7 @@ phase_task_list_del_srclink(struct phase_task_list *l, struct phase_link *link)
     return SUCCESS;
 }
 
-static int
+int
 _phase_dag_del_link(struct phase_dag *dag, int src_id, int dest_id)
 {
     struct phase_link *link = NULL;

@@ -27,6 +27,8 @@ struct phase_task {
 };
 
 #define phase_task_get_srclist_size(p)  ((p)->src_list.size)
+#define phase_task_get_destlist_size(p)  ((p)->dest_list.size)
+#define phase_task_is_batch(p)  ((phase_task_get_srclist_size(p) == 0) && (phase_task_get_destlist_size(p) == 0))
 
 struct phase_link {
     struct phase_link *src_next;
@@ -67,11 +69,21 @@ int
 phase_dag_free(struct phase_dag *dag);
 
 int
+                _phase_dag_add_link(
+                                   struct phase_dag *dag,
+                                   int src_id,
+                                   int dest_id,
+                                   int weight);
+
+int
                 phase_dag_add_link(
                                    struct phase_dag *dag,
                                    int src_pid,
                                    int dest_pid,
                                    int weight);
+
+int
+_phase_dag_del_link(struct phase_dag *dag, int src_id, int dest_id);
 
 int
 phase_dag_del_link(struct phase_dag *dag, int src_pid, int dest_pid);

@@ -72,8 +72,8 @@ ssize_t phase_sched_show_req (void* obj, char *buf)
     struct phase_sched *ps = obj;
     int ret = sprintf(buf, "%d %d %d %d", 
                     ps->req.cmd, 
-                    ps->req.src_pid,
-                    ps->req.dest_pid,
+                    ps->req.src_id,
+                    ps->req.dest_id,
                     ps->req.weight);
     return ret;
 }
@@ -92,8 +92,8 @@ ssize_t phase_sched_store_req (void* obj, const char *buf, size_t size)
         return 0;
     
     ps->req.cmd = req->cmd;
-    ps->req.src_pid = req->src_pid;
-    ps->req.dest_pid = req->dest_pid;
+    ps->req.src_id = req->src_id;
+    ps->req.dest_id = req->dest_id;
     ps->req.weight = req->weight;
     phase_sched_do_req(ps, &ps->req);
     

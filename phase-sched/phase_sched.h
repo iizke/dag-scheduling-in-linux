@@ -20,8 +20,8 @@
 
 struct phase_req {
     int cmd;
-    int src_pid;
-    int dest_pid;
+    int src_id;
+    int dest_id;
     int weight;
 };
 

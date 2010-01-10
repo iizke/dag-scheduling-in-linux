@@ -19,14 +19,17 @@
 #define PHASE_SCHED_CMD_DEL     1
 #define PHASE_SCHED_CMD_NEW     2
 
-struct phase_req {
+struct phase_mpireq {
     int cmd;
-    int src_id;
-    int dest_id;
+    int usrc_id;
+    union {
+        int udest_id;
+        int src_pid;
+    }
     int weight;
 };
 
-int phase_sched_send_req(struct phase_req *req);
+int phase_sched_send_req(struct phase_mpireq *req);
 int psMPI_Send(void *buf, int count, MPI_Datatype datatype, int dest, int tag,
         MPI_Comm comm);
 int psMPI_Recv(void *buf, int count, MPI_Datatype datatype, int source,

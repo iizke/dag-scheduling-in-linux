@@ -17,14 +17,14 @@ write2file(char *file, void *buf, int size)
 }
 
 int
-phase_sched_send_mpireq(struct phase_mpireq *req, int rank)
+phase_sched_send_mpireq(struct phase_mpireq *req)
 {
     if (!req)
         return ERR_PHASE_REQ_NULL;
 
     write2file(SYSFS_PHASE_SCHED_REQ_FILE,
                (void *) req,
-               sizeof(struct phase_req));
+               sizeof(struct phase_mpireq));
     return SUCCESS;
 }
 
@@ -49,7 +49,15 @@ psMPI_Recv(void *buf,
            MPI_Status *status)
 {
     int flag;
+    struct phase_mpireq req;
+    MPI_Comm_rank(MPI_COMM_WORLD, &req.udest_id);
+    req.cmd = PHASE_SCHED_CMD_ADD;
+    req.usrc_id = source;
+    req.weight = 1;
+    phase_sched_send_mpireq(&req);
     flag = MPI_Recv(buf, count, datatype, source, tag, comm, status);
+    req.cmd = PHASE_SCHED_CMD_DEL;
+    phase_sched_send_mpireq(&req);
     return flag;
 }
 
@@ -57,13 +65,12 @@ int
 psMPI_Init(int *argc, char ***argv)
 {
     int flag;
-    int rank;
-    struct phase_req req;
+    struct phase_mpireq req;
 
     flag = MPI_Init(argc, argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_rank(MPI_COMM_WORLD, &req.usrc_id);
     req.cmd = PHASE_SCHED_CMD_NEW;
-    req.src_id = get_pid();
-    phase_sched_send_mpireq(&req, rank);
+    req.src_pid = get_pid();
+    phase_sched_send_mpireq(&req);
     return flag;
 }

@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <mpi.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <wait.h>
@@ -21,7 +20,8 @@
 
 #define MAX_INT     32767
 
-void script_usage()
+void
+script_usage()
 {
 }
 
@@ -43,8 +43,8 @@ void script_usage()
  *      END
  *
  *---------------------------------------------------------------------*/
-int build_action_table(const struct cmdoptions *opts,
-        struct action_table *acttbl)
+int
+build_action_table(const struct cmdoptions *opts, struct action_table *acttbl)
 {
     FILE *f; // id of file script when openning
     int i, err = 0, num1 = 0, num2 = 0;
@@ -165,7 +165,8 @@ int build_action_table(const struct cmdoptions *opts,
  * Return : 0 if SUCCESS, -1 if FAIL
  *
  *---------------------------------------------------------------------*/
-int build_process(const struct action_script *script, int rank, int dagid)
+int
+build_process(const struct action_script *script, int rank)
 {
     int i, loop_flag, err = 0;
     struct action_struct *cur;
@@ -176,7 +177,7 @@ int build_process(const struct action_script *script, int rank, int dagid)
         loop_flag = -1;
 
     for (i = 0; i * loop_flag < loop_flag * script->nloops; i = (i + 1)
-            * (loop_flag + 1) / 2) {
+                    * (loop_flag + 1) / 2) {
         int j;
         cur = script->actions;
         for (j = 0; j < script->nsteps; j++) {
@@ -189,52 +190,76 @@ int build_process(const struct action_script *script, int rank, int dagid)
             cur = cur->next;
 
             switch (action) {
-            case ACT_SEND:
-                /* call malloc */
-                buf = malloc(sizeof(*buf) * arg1);
-                err = psMPI_Send(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD);
-                //dsm_remove_mpi_connection(dagid, arg2, rank);
-                if (err != MPI_SUCCESS)
-                    printf("p%d : Send %d , %d : failed \n", rank, arg1, arg2);
-                else
-                    printf("p%d : Send %d , %d\n", rank, arg1, arg2);
-                break;
-            case ACT_SSEND:
-                /* call malloc */
-                buf = malloc(sizeof(*buf) * arg1);
-                err = psMPI_Send(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD);
-                //dsm_remove_mpi_connection(dagid, arg2, rank);
-                if (err != MPI_SUCCESS)
-                    printf("p%d : SSend %d , %d : failed \n", rank, arg1, arg2);
-                else
-                    printf("p%d : SSend %d , %d\n", rank, arg1, arg2);
-                break;
-            case ACT_RECV:
-                /* call malloc ? */
-                buf = malloc(sizeof(*buf) * arg1);
-                //dsm_add_mpi_connection(dagid, arg2, rank);
-                err = psMPI_Recv(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD,
-                        &status);
-                //dsm_remove_mpi_connection(dagid, arg2, rank);
-                if (err != MPI_SUCCESS)
-                    printf("p%d : Recv %d , %d : failed \n", rank, arg1, arg2);
-                else
-                    printf("p%d : Recv %d , %d\n", rank, arg1, arg2);
+                case ACT_SEND:
+                    /* call malloc */
+                    buf = malloc(sizeof(*buf) * arg1);
+                    err = psMPI_Send(&buf,
+                                     arg1,
+                                     MPI_INT,
+                                     arg2,
+                                     0,
+                                     MPI_COMM_WORLD);
+                    //dsm_remove_mpi_connection(dagid, arg2, rank);
+                    if (err != MPI_SUCCESS)
+                        printf("p%d : Send %d , %d : failed \n",
+                               rank,
+                               arg1,
+                               arg2);
+                    else
+                        printf("p%d : Send %d , %d\n", rank, arg1, arg2);
+                    break;
+                case ACT_SSEND:
+                    /* call malloc */
+                    buf = malloc(sizeof(*buf) * arg1);
+                    err = psMPI_Send(&buf,
+                                     arg1,
+                                     MPI_INT,
+                                     arg2,
+                                     0,
+                                     MPI_COMM_WORLD);
+                    //dsm_remove_mpi_connection(dagid, arg2, rank);
+                    if (err != MPI_SUCCESS)
+                        printf("p%d : SSend %d , %d : failed \n",
+                               rank,
+                               arg1,
+                               arg2);
+                    else
+                        printf("p%d : SSend %d , %d\n", rank, arg1, arg2);
+                    break;
+                case ACT_RECV:
+                    /* call malloc ? */
+                    buf = malloc(sizeof(*buf) * arg1);
+                    //dsm_add_mpi_connection(dagid, arg2, rank);
+                    err = psMPI_Recv(&buf,
+                                     arg1,
+                                     MPI_INT,
+                                     arg2,
+                                     0,
+                                     MPI_COMM_WORLD,
+                                     &status);
+                    //dsm_remove_mpi_connection(dagid, arg2, rank);
+                    if (err != MPI_SUCCESS)
+                        printf("p%d : Recv %d , %d : failed \n",
+                               rank,
+                               arg1,
+                               arg2);
+                    else
+                        printf("p%d : Recv %d , %d\n", rank, arg1, arg2);
 
-                break;
-            case ACT_GENLOAD:
-                printf("p%d : Genload %d , %d \n", rank, arg1, arg2);
-                for (k = 0; k < arg2; k++)
-                    do_load(arg1);
-                break;
-            case ACT_SLEEP:
-                printf("p%d : Sleep %d \n", rank, arg1);
-                sleep(arg1);
-                break;
-            case ACT_JUMP:
-                break;
-            default:
-                break;
+                    break;
+                case ACT_GENLOAD:
+                    printf("p%d : Genload %d , %d \n", rank, arg1, arg2);
+                    for (k = 0; k < arg2; k++)
+                        do_load(arg1);
+                    break;
+                case ACT_SLEEP:
+                    printf("p%d : Sleep %d \n", rank, arg1);
+                    sleep(arg1);
+                    break;
+                case ACT_JUMP:
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -251,20 +276,16 @@ int build_process(const struct action_script *script, int rank, int dagid)
  *  - Based on input, build processes doing those activities
  *
  *---------------------------------------------------------------------*/
-int main(int argc, char ** argv)
+int
+main(int argc, char ** argv)
 {
     struct cmdoptions opts; // options of command line
     struct action_table acttbl; // actions of all processes
     int rank, err, size, status;
-    int dagid;
     //  char *arg;
-    MPI_Init(&argc, &argv);
+    psMPI_Init(&argc, &argv);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-
-    /* For DAG SCHED */
-    //dsm_init(&dagid);
-    //dsm_add_mpitask(dagid, rank);
 
     /* Parse arguments */
     err = parser_arg(argc, argv, &opts);
@@ -281,10 +302,9 @@ int main(int argc, char ** argv)
         return 0;
     }
 
-    build_process(&acttbl.script[rank], rank, dagid);
+    build_process(&acttbl.script[rank], rank);
 
     /* FOR DAG SCHED */
-    //dsm_remove_mpitask(dagid, rank);
     psMPI_Finalize();
     return 0;
 }

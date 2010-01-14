@@ -22,10 +22,10 @@
 struct phase_mpireq {
     int cmd;
     int usrc_id;
-//    union {
+    union {
         int udest_id;
         int src_pid;
-//    };
+    };
     int weight;
 };
 

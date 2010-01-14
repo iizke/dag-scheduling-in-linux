@@ -5,6 +5,9 @@
  *      Author: roseman
  */
 #include "phase_sched_mpi.h"
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 static int
 write2file(char *file, void *buf, int size)
@@ -22,7 +25,7 @@ phase_sched_send_mpireq(struct phase_mpireq *req)
     if (!req)
         return ERR_PHASE_REQ_NULL;
 
-    write2file(SYSFS_PHASE_SCHED_REQ_FILE,
+    write2file(SYSFS_PHASE_REQ_FILE,
                (void *) req,
                sizeof(struct phase_mpireq));
     return SUCCESS;
@@ -50,7 +53,7 @@ psMPI_Recv(void *buf,
 {
     int flag;
     struct phase_mpireq req;
-    MPI_Comm_rank(MPI_COMM_WORLD, &req.udest_id);
+    MPI_Comm_rank(MPI_COMM_WORLD, &(req.udest_id));
     req.cmd = PHASE_SCHED_CMD_ADD;
     req.usrc_id = source;
     req.weight = 1;
@@ -70,7 +73,7 @@ psMPI_Init(int *argc, char ***argv)
     flag = MPI_Init(argc, argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &req.usrc_id);
     req.cmd = PHASE_SCHED_CMD_NEW;
-    req.src_pid = get_pid();
+    req.src_pid = getpid();
     phase_sched_send_mpireq(&req);
     return flag;
 }

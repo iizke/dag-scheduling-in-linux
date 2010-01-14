@@ -22,10 +22,10 @@
 struct phase_mpireq {
     int cmd;
     int usrc_id;
-    union {
+//    union {
         int udest_id;
         int src_pid;
-    }
+//    };
     int weight;
 };
 
@@ -35,5 +35,6 @@ int psMPI_Send(void *buf, int count, MPI_Datatype datatype, int dest, int tag,
 int psMPI_Recv(void *buf, int count, MPI_Datatype datatype, int source,
         int tag, MPI_Comm comm, MPI_Status *status);
 int psMPI_Init(int *argc, char ***argv);
+void psMPI_Finalize();
 
 #endif /* PHASE_SCHED_H_ */

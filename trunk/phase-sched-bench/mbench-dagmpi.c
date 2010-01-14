@@ -193,7 +193,7 @@ build_process(const struct action_script *script, int rank)
                 case ACT_SEND:
                     /* call malloc */
                     buf = malloc(sizeof(*buf) * arg1);
-                    err = psMPI_Send(&buf,
+                    err = psMPI_Send(buf,
                                      arg1,
                                      MPI_INT,
                                      arg2,
@@ -211,7 +211,7 @@ build_process(const struct action_script *script, int rank)
                 case ACT_SSEND:
                     /* call malloc */
                     buf = malloc(sizeof(*buf) * arg1);
-                    err = psMPI_Send(&buf,
+                    err = psMPI_Send((void*)buf,
                                      arg1,
                                      MPI_INT,
                                      arg2,
@@ -230,7 +230,7 @@ build_process(const struct action_script *script, int rank)
                     /* call malloc ? */
                     buf = malloc(sizeof(*buf) * arg1);
                     //dsm_add_mpi_connection(dagid, arg2, rank);
-                    err = psMPI_Recv(&buf,
+                    err = psMPI_Recv(buf,
                                      arg1,
                                      MPI_INT,
                                      arg2,

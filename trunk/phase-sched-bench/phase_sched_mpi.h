@@ -13,7 +13,7 @@
 #define SUCCESS                 0
 #define ERR_PHASE_REQ_NULL      (-1)
 
-#define SYSFS_PHASE_REQ_FILE    "/sys/phase-sched/req"
+#define SYSFS_PHASE_REQ_FILE    "/sys/phase-sched/mpireq"
 
 #define PHASE_SCHED_CMD_ADD     0
 #define PHASE_SCHED_CMD_DEL     1

@@ -74,3 +74,9 @@ psMPI_Init(int *argc, char ***argv)
     phase_sched_send_mpireq(&req);
     return flag;
 }
+
+void psMPI_Finalize()
+{
+    // reset module
+    MPI_Finalize();
+}

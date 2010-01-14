@@ -17,6 +17,7 @@
 #include "parser.h"
 #include "errors.h"
 #include "mbench-mpi.h"
+#include "phase_sched_mpi.h"
 
 #define MAX_INT     32767
 
@@ -191,7 +192,7 @@ int build_process(const struct action_script *script, int rank, int dagid)
             case ACT_SEND:
                 /* call malloc */
                 buf = malloc(sizeof(*buf) * arg1);
-                err = MPI_Send(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD);
+                err = psMPI_Send(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD);
                 //dsm_remove_mpi_connection(dagid, arg2, rank);
                 if (err != MPI_SUCCESS)
                     printf("p%d : Send %d , %d : failed \n", rank, arg1, arg2);
@@ -201,7 +202,7 @@ int build_process(const struct action_script *script, int rank, int dagid)
             case ACT_SSEND:
                 /* call malloc */
                 buf = malloc(sizeof(*buf) * arg1);
-                err = MPI_Send(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD);
+                err = psMPI_Send(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD);
                 //dsm_remove_mpi_connection(dagid, arg2, rank);
                 if (err != MPI_SUCCESS)
                     printf("p%d : SSend %d , %d : failed \n", rank, arg1, arg2);
@@ -212,7 +213,7 @@ int build_process(const struct action_script *script, int rank, int dagid)
                 /* call malloc ? */
                 buf = malloc(sizeof(*buf) * arg1);
                 //dsm_add_mpi_connection(dagid, arg2, rank);
-                err = MPI_Recv(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD,
+                err = psMPI_Recv(&buf, arg1, MPI_INT, arg2, 0, MPI_COMM_WORLD,
                         &status);
                 //dsm_remove_mpi_connection(dagid, arg2, rank);
                 if (err != MPI_SUCCESS)
@@ -284,6 +285,6 @@ int main(int argc, char ** argv)
 
     /* FOR DAG SCHED */
     //dsm_remove_mpitask(dagid, rank);
-    MPI_Finalize();
+    psMPI_Finalize();
     return 0;
 }

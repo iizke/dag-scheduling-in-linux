@@ -20,8 +20,15 @@
 
 struct phase_req {
     int cmd;
-    int src_id;
-    int dest_id;
+    union {
+        int src_id;
+        int usrc_id;
+    };
+    union {
+        int dest_id;
+        int udest_id;
+        int src_pid;
+    };
     int weight;
 };
 
@@ -32,6 +39,8 @@ struct phase_sched {
     struct kobj_type phase_ktype;
     struct phase_req req;
     struct phase_attr req_attr;
+    struct phase_req mpireq;
+    struct phase_attr mpireq_attr;
     /** cpuload_list: list of cpu load for all cpus */
     struct cpuload_list cpuload_list;
     /** DAG data: information about DAG tree of processes */

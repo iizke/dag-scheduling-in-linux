@@ -32,7 +32,8 @@ phase_sched_show(struct kobject *kobj, struct attribute *attr, char *buffer)
     struct kset *kset;
     struct phase_sched * ps;
 
-    if ((!kobj) || (!attr) || (!buffer)) return 0;
+    if ((!kobj) || (!attr) || (!buffer))
+        return 0;
 
     kset = container_of(kobj, struct kset, kobj);
     subsystem = container_of(kset, struct subsystem, kset);
@@ -43,15 +44,18 @@ phase_sched_show(struct kobject *kobj, struct attribute *attr, char *buffer)
 }
 
 static ssize_t
-phase_sched_store(struct kobject *kobj, struct attribute *attr,
-                const char *buffer, size_t size)
+phase_sched_store(struct kobject *kobj,
+                  struct attribute *attr,
+                  const char *buffer,
+                  size_t size)
 {
     struct phase_attr *_attr;
     struct kset *kset;
     struct subsystem *subsystem;
     struct phase_sched *phase_sched;
 
-    if ((!kobj) || (!attr) || (!buffer)) return 0;
+    if ((!kobj) || (!attr) || (!buffer))
+        return 0;
 
     kset = container_of(kobj, struct kset, kobj);
     subsystem = container_of(kset, struct subsystem, kset);
@@ -67,40 +71,79 @@ phase_sched_release(struct kobject *kobj)
     return;
 }
 
-ssize_t phase_sched_show_req (void* obj, char *buf)
+ssize_t
+phase_sched_show_req(void* obj, char *buf)
 {
     struct phase_sched *ps = obj;
-    int ret = sprintf(buf, "%d %d %d %d", 
-                    ps->req.cmd, 
-                    ps->req.src_id,
-                    ps->req.dest_id,
-                    ps->req.weight);
+    int ret = sprintf(buf,
+                      "%d %d %d %d",
+                      ps->req.cmd,
+                      ps->req.src_id,
+                      ps->req.dest_id,
+                      ps->req.weight);
     return ret;
 }
 
-ssize_t phase_sched_store_req (void* obj, const char *buf, size_t size)
+ssize_t
+phase_sched_store_req(void* obj, const char *buf, size_t size)
 {
-    struct  phase_sched *ps = obj;
+    struct phase_sched *ps = obj;
     struct phase_req * req = (struct phase_req*) buf;
-    
+
     if (size != sizeof(struct phase_req)) {
         printk("Input type is not expected, storing request is end \n");
         return 0;
     }
-    
+
     if (!ps)
         return 0;
-    
+
     ps->req.cmd = req->cmd;
     ps->req.src_id = req->src_id;
     ps->req.dest_id = req->dest_id;
     ps->req.weight = req->weight;
     phase_sched_do_req(ps, &ps->req);
-    
+
     return size;
 }
 
-int phase_sysfs_init(struct phase_sched *ps)
+ssize_t
+phase_sched_show_mpireq(void* obj, char *buf)
+{
+    struct phase_sched *ps = obj;
+    int ret = sprintf(buf,
+                      "%d %d %d %d",
+                      ps->req.cmd,
+                      ps->req.src_id,
+                      ps->req.dest_id,
+                      ps->req.weight);
+    return ret;
+}
+
+ssize_t
+phase_sched_store_mpireq(void* obj, const char *buf, size_t size)
+{
+    struct phase_sched *ps = obj;
+    struct phase_req * req = (struct phase_req*) buf;
+
+    if (size != sizeof(struct phase_req)) {
+        printk("Input type is not expected, storing request is end \n");
+        return 0;
+    }
+
+    if (!ps)
+        return 0;
+
+    ps->req.cmd = req->cmd;
+    ps->req.src_id = req->src_id;
+    ps->req.dest_id = req->dest_id;
+    ps->req.weight = req->weight;
+    phase_sched_do_req(ps, &ps->req);
+
+    return size;
+}
+int
+phase_sysfs_init(struct phase_sched *ps)
 {
     if (!ps)
         return FAIL;
@@ -111,6 +154,13 @@ int phase_sysfs_init(struct phase_sched *ps)
     ps->req_attr.attr.owner = THIS_MODULE;
     ps->req_attr.show = phase_sched_show_req;
     ps->req_attr.store = phase_sched_store_req;
+
+    ps->mpireq_attr.attr.name = __stringify(req);
+    ps->mpireq_attr.attr.mode = 0666;
+    ps->mpireq_attr.attr.owner = THIS_MODULE;
+    ps->mpireq_attr.show = phase_sched_show_mpireq;
+    ps->mpireq_attr.store = phase_sched_store_mpireq;
+
     //ps->phase_attrs[0] = &ps->req_attr.attr;
     memcpy(&ps->phase_attrs[0], &(ps->req_attr.attr), sizeof(struct attribute));
     //ps->phase_attrs[1] = NULL;
@@ -121,7 +171,8 @@ int phase_sysfs_init(struct phase_sched *ps)
     return SUCCESS;
 }
 
-int build_phase_sysfs_tree(struct phase_sched *ps)
+int
+build_phase_sysfs_tree(struct phase_sched *ps)
 {
     struct kset *kset = NULL;
 
@@ -137,7 +188,8 @@ int build_phase_sysfs_tree(struct phase_sched *ps)
     return SUCCESS;
 }
 
-int free_phase_sysfs_tree(struct phase_sched *ps)
+int
+free_phase_sysfs_tree(struct phase_sched *ps)
 {
     subsystem_unregister(&ps->subsystem);
     return SUCCESS;
